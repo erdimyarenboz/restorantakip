@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import prisma from '../config/database';
+import { supabase } from '../config/supabase';
 import { config } from '../config/env';
 
 const router = Router();
@@ -18,29 +18,37 @@ router.post('/login', async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Email/username and password are required' });
         }
 
-        // Build where clause
-        const whereClause: any = { email: loginEmail };
+        // Find user via Supabase
+        let query = supabase
+            .from('users')
+            .select('*, restaurants(*)')
+            .eq('email', loginEmail)
+            .eq('is_active', true)
+            .single();
 
-        if (restaurantSlug) {
-            whereClause.restaurant = { slug: restaurantSlug };
-        } else if (restaurantId) {
-            whereClause.restaurantId = restaurantId;
+        if (restaurantId) {
+            query = supabase
+                .from('users')
+                .select('*, restaurants(*)')
+                .eq('email', loginEmail)
+                .eq('restaurant_id', restaurantId)
+                .eq('is_active', true)
+                .single();
         }
 
-        // Find user
-        const user = await prisma.user.findFirst({
-            where: whereClause,
-            include: {
-                restaurant: true,
-            },
-        });
+        const { data: user, error: userError } = await query;
 
-        if (!user) {
+        if (userError || !user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // If restaurantSlug was provided, verify it matches
+        if (restaurantSlug && user.restaurants?.slug !== restaurantSlug) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         // Verify password
-        const isValid = await bcrypt.compare(password, user.passwordHash);
+        const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
@@ -49,7 +57,7 @@ router.post('/login', async (req: Request, res: Response) => {
         const token = jwt.sign(
             {
                 userId: user.id,
-                restaurantId: user.restaurantId,
+                restaurantId: user.restaurant_id,
                 role: user.role,
             },
             config.jwt.secret,
@@ -61,12 +69,12 @@ router.post('/login', async (req: Request, res: Response) => {
             user: {
                 id: user.id,
                 email: user.email,
-                fullName: user.fullName,
+                fullName: user.full_name,
                 role: user.role,
                 restaurant: {
-                    id: user.restaurant.id,
-                    name: user.restaurant.name,
-                    slug: user.restaurant.slug,
+                    id: user.restaurants?.id,
+                    name: user.restaurants?.name,
+                    slug: user.restaurants?.slug,
                 },
             },
         });
@@ -81,11 +89,13 @@ router.post('/customer-login', async (req: Request, res: Response) => {
     try {
         const { restaurantSlug, tableNumber } = req.body;
 
-        const restaurant = await prisma.restaurant.findUnique({
-            where: { slug: restaurantSlug },
-        });
+        const { data: restaurant, error } = await supabase
+            .from('restaurants')
+            .select('*')
+            .eq('slug', restaurantSlug)
+            .single();
 
-        if (!restaurant) {
+        if (error || !restaurant) {
             return res.status(404).json({ error: 'Restaurant not found' });
         }
 
