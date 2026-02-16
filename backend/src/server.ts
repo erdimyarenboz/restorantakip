@@ -46,12 +46,14 @@ app.use('/api/v1/crm', crmRoutes);
 // Error handling
 app.use(errorHandler);
 
-// Start server
-const PORT = config.port;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 Environment: ${config.nodeEnv}`);
-    console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
-});
+// Start server (only when not in Vercel serverless)
+if (!process.env.VERCEL) {
+    const PORT = config.port;
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📍 Environment: ${config.nodeEnv}`);
+        console.log(`🌐 Frontend URL: ${config.frontendUrl}`);
+    });
+}
 
 export default app;
