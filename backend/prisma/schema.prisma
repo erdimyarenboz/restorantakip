@@ -1,0 +1,159 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Restoranlar (Multi-tenant)
+model Restaurant {
+  id               String    @id @default(uuid())
+  name             String
+  slug             String    @unique
+  phone            String?
+  address          String?
+  logoUrl          String?   @map("logo_url")
+  isActive         Boolean   @default(true) @map("is_active")
+  subscriptionPlan String    @default("free") @map("subscription_plan")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  users      User[]
+  categories Category[]
+  products   Product[]
+  tables     Table[]
+  orders     Order[]
+
+  @@map("restaurants")
+}
+
+// Kullanıcılar
+model User {
+  id           String   @id @default(uuid())
+  restaurantId String   @map("restaurant_id")
+  email        String?
+  phone        String?
+  passwordHash String   @map("password_hash")
+  role         String   // 'admin', 'waiter', 'kitchen', 'cashier'
+  fullName     String?  @map("full_name")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+// Kategoriler
+model Category {
+  id           String   @id @default(uuid())
+  restaurantId String   @map("restaurant_id")
+  name         String
+  icon         String?
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products   Product[]
+
+  @@map("categories")
+}
+
+// Ürünler
+model Product {
+  id           String   @id @default(uuid())
+  restaurantId String   @map("restaurant_id")
+  categoryId   String   @map("category_id")
+  name         String
+  description  String?
+  price        Decimal  @db.Decimal(10, 2)
+  imageUrl     String?  @map("image_url")
+  isAvailable  Boolean  @default(true) @map("is_available")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// Masalar
+model Table {
+  id           String   @id @default(uuid())
+  restaurantId String   @map("restaurant_id")
+  tableNumber  Int      @map("table_number")
+  qrCode       String?  @map("qr_code")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders     Order[]
+
+  @@unique([restaurantId, tableNumber])
+  @@map("tables")
+}
+
+// Siparişler
+model Order {
+  id            String    @id @default(uuid())
+  orderCode     String    @unique @map("order_code")
+  restaurantId  String    @map("restaurant_id")
+  tableId       String    @map("table_id")
+  customerPhone String?   @map("customer_phone")
+  customerNote  String?   @map("customer_note")
+  status        String    // 'Mutfakta', 'Hazır', 'Teslim Edildi', 'Ödendi', 'İptal'
+  subtotal      Decimal   @db.Decimal(10, 2)
+  total         Decimal   @db.Decimal(10, 2)
+  paidAt        DateTime? @map("paid_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table      Table       @relation(fields: [tableId], references: [id])
+  items      OrderItem[]
+  payments   Payment[]
+
+  @@index([restaurantId, status])
+  @@index([createdAt(sort: Desc)])
+  @@map("orders")
+}
+
+// Sipariş Kalemleri
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String   @map("order_id")
+  productId   String   @map("product_id")
+  productName String   @map("product_name")
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
+  subtotal    Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Ödemeler
+model Payment {
+  id            String   @id @default(uuid())
+  orderId       String   @map("order_id")
+  amount        Decimal  @db.Decimal(10, 2)
+  paymentMethod String?  @map("payment_method") // 'cash', 'card', 'pos'
+  transactionId String?  @map("transaction_id")
+  status        String   @default("completed")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
