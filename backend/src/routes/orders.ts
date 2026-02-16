@@ -7,7 +7,9 @@ const router = Router();
 // Get all orders (using Supabase client)
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const { data, error } = await supabase
+        const restaurant_id = req.query.restaurant_id as string;
+
+        let query = supabase
             .from('orders')
             .select(`
                 *,
@@ -18,6 +20,12 @@ router.get('/', async (req: Request, res: Response) => {
                 )
             `)
             .order('created_at', { ascending: false });
+
+        if (restaurant_id) {
+            query = query.eq('restaurant_id', restaurant_id);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         res.json(data);
@@ -30,7 +38,7 @@ router.get('/', async (req: Request, res: Response) => {
 // Create order (using Supabase client)
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const { tableNumber, items, customerNote, orderSource = 'restaurant' } = req.body;
+        const { tableNumber, items, customerNote, orderSource = 'restaurant', restaurant_id } = req.body;
 
         console.log('📝 Creating order:', { tableNumber, itemsCount: items?.length, customerNote, orderSource });
 
@@ -39,11 +47,16 @@ router.post('/', async (req: Request, res: Response) => {
 
         if (!isThirdParty) {
             // Find table for restaurant orders
-            const { data: tableData, error: tableError } = await supabase
+            let tableQuery = supabase
                 .from('tables')
                 .select('*')
-                .eq('table_number', parseInt(tableNumber))
-                .single();
+                .eq('table_number', parseInt(tableNumber));
+
+            if (restaurant_id) {
+                tableQuery = tableQuery.eq('restaurant_id', restaurant_id);
+            }
+
+            const { data: tableData, error: tableError } = await tableQuery.single();
 
             console.log('🔍 Table lookup result:', {
                 found: !!tableData,
@@ -63,7 +76,7 @@ router.post('/', async (req: Request, res: Response) => {
                 .select('restaurant_id')
                 .limit(1)
                 .single();
-            table = { restaurant_id: firstTable?.restaurant_id || 'rest-001', id: null };
+            table = { restaurant_id: restaurant_id || firstTable?.restaurant_id || 'rest-001', id: null };
         }
 
         // Calculate totals
@@ -188,7 +201,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
 // Report endpoint — revenue by period with source filtering
 router.get('/report', async (req: Request, res: Response) => {
     try {
-        const { period, startDate, endDate, source } = req.query;
+        const { period, startDate, endDate, source, restaurant_id } = req.query;
 
         // Use Istanbul timezone (UTC+3) for date calculations
         const toIstanbul = (d: Date) => {
@@ -244,6 +257,11 @@ router.get('/report', async (req: Request, res: Response) => {
         // Source filter
         if (source && source !== 'all') {
             query = query.eq('order_source', source as string);
+        }
+
+        // Restaurant filter for multi-tenant
+        if (restaurant_id) {
+            query = query.eq('restaurant_id', restaurant_id as string);
         }
 
         const { data, error } = await query;

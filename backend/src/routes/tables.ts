@@ -3,13 +3,21 @@ import { supabase } from '../config/supabase';
 
 const router = Router();
 
-// Get all tables
+// Get all tables (filtered by restaurant_id)
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const { data, error } = await supabase
+        const restaurant_id = req.query.restaurant_id as string;
+
+        let query = supabase
             .from('tables')
             .select('*')
             .order('table_number', { ascending: true });
+
+        if (restaurant_id) {
+            query = query.eq('restaurant_id', restaurant_id);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         res.json(data);
@@ -22,7 +30,8 @@ router.get('/', async (req: Request, res: Response) => {
 // Create a new table
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const { table_number } = req.body;
+        const { table_number, restaurant_id } = req.body;
+        const rid = restaurant_id || 'rest-001';
 
         if (!table_number || table_number < 1) {
             return res.status(400).json({ error: 'Geçerli bir masa numarası girin' });
@@ -33,20 +42,20 @@ router.post('/', async (req: Request, res: Response) => {
             .from('tables')
             .select('id')
             .eq('table_number', table_number)
-            .eq('restaurant_id', 'rest-001')
+            .eq('restaurant_id', rid)
             .single();
 
         if (existing) {
             return res.status(409).json({ error: `Masa ${table_number} zaten mevcut` });
         }
 
-        const id = `table-${String(table_number).padStart(3, '0')}`;
+        const id = `table-${rid}-${String(table_number).padStart(3, '0')}`;
 
         const { data, error } = await supabase
             .from('tables')
             .insert({
                 id,
-                restaurant_id: 'rest-001',
+                restaurant_id: rid,
                 table_number,
                 is_active: true,
             })

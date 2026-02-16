@@ -3,13 +3,21 @@ import { supabase } from '../config/supabase';
 
 const router = Router();
 
-// Get all waiters
+// Get all waiters (filtered by restaurant_id)
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const { data, error } = await supabase
+        const restaurant_id = req.query.restaurant_id as string;
+
+        let query = supabase
             .from('waiters')
             .select('*')
             .order('created_at', { ascending: true });
+
+        if (restaurant_id) {
+            query = query.eq('restaurant_id', restaurant_id);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         res.json(data);
@@ -22,7 +30,8 @@ router.get('/', async (req: Request, res: Response) => {
 // Create a new waiter
 router.post('/', async (req: Request, res: Response) => {
     try {
-        const { full_name, phone } = req.body;
+        const { full_name, phone, restaurant_id } = req.body;
+        const rid = restaurant_id || 'rest-001';
 
         if (!full_name || full_name.trim().length < 2) {
             return res.status(400).json({ error: 'Garson adı en az 2 karakter olmalıdır' });
@@ -34,7 +43,7 @@ router.post('/', async (req: Request, res: Response) => {
             .from('waiters')
             .insert({
                 id,
-                restaurant_id: 'rest-001',
+                restaurant_id: rid,
                 full_name: full_name.trim(),
                 phone: phone?.trim() || null,
                 is_active: true,

@@ -22,6 +22,27 @@ router.get('/restaurants', async (req: Request, res: Response) => {
     }
 });
 
+// Get restaurant by slug (slug resolver for multi-tenant)
+router.get('/restaurants/:slug', async (req: Request, res: Response) => {
+    try {
+        const { slug } = req.params;
+        const { data, error } = await supabase
+            .from('restaurants')
+            .select('id, name, slug, phone, address, logo_url, is_active')
+            .eq('slug', slug)
+            .eq('is_active', true)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({ error: 'Restoran bulunamadı' });
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('Get restaurant by slug error:', error);
+        res.status(500).json({ error: 'Restoran yüklenemedi' });
+    }
+});
+
 // =================== CATEGORIES ===================
 
 // Get categories (filtered by restaurant_id)
