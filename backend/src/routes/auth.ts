@@ -42,7 +42,7 @@ router.post('/login', async (req: Request, res: Response) => {
                 role: user.role,
             },
             config.jwt.secret,
-            { expiresIn: config.jwt.expiresIn }
+            { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
         );
 
         res.json({

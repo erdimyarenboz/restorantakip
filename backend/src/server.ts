@@ -14,8 +14,18 @@ import crmRoutes from './routes/crm';
 const app = express();
 
 // Middleware
+const allowedOrigins = config.frontendUrl === '*'
+    ? '*'
+    : [config.frontendUrl, 'http://localhost:5173', 'http://localhost:4173'].filter(Boolean);
+
 app.use(cors({
-    origin: config.frontendUrl,
+    origin: allowedOrigins === '*' ? '*' : (origin, callback) => {
+        if (!origin || (allowedOrigins as string[]).includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, true); // Allow all for now, tighten in production
+        }
+    },
     credentials: true,
 }));
 app.use(express.json());
