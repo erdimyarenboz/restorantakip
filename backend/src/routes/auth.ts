@@ -9,16 +9,27 @@ const router = Router();
 // Login
 router.post('/login', async (req: Request, res: Response) => {
     try {
-        const { email, password, restaurantSlug } = req.body;
+        const { email, username, password, restaurantSlug, restaurantId } = req.body;
+
+        // Support both email and username login
+        const loginEmail = email || username;
+
+        if (!loginEmail || !password) {
+            return res.status(400).json({ error: 'Email/username and password are required' });
+        }
+
+        // Build where clause
+        const whereClause: any = { email: loginEmail };
+
+        if (restaurantSlug) {
+            whereClause.restaurant = { slug: restaurantSlug };
+        } else if (restaurantId) {
+            whereClause.restaurantId = restaurantId;
+        }
 
         // Find user
         const user = await prisma.user.findFirst({
-            where: {
-                email,
-                restaurant: {
-                    slug: restaurantSlug,
-                },
-            },
+            where: whereClause,
             include: {
                 restaurant: true,
             },
