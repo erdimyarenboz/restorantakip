@@ -16,7 +16,7 @@ const app = express();
 // Middleware
 const allowedOrigins = config.frontendUrl === '*'
     ? '*'
-    : [config.frontendUrl, 'http://localhost:5173', 'http://localhost:4173'].filter(Boolean);
+    : [config.frontendUrl, 'http://localhost:5173', 'http://localhost:4173', 'http://restuarantsiparistakip.com.tr', 'https://restuarantsiparistakip.com.tr'].filter(Boolean);
 
 app.use(cors({
     origin: allowedOrigins === '*' ? '*' : (origin, callback) => {
