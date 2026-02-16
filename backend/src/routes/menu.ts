@@ -1,5 +1,6 @@
 import { Router, Response, Request } from 'express';
 import { supabase } from '../config/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
 
@@ -181,6 +182,7 @@ router.post('/products', async (req: Request, res: Response) => {
             rid = cat.restaurant_id;
         }
 
+        const { image_url } = req.body;
         const id = `prod-${Date.now()}`;
         const { data, error } = await supabase
             .from('products')
@@ -191,6 +193,7 @@ router.post('/products', async (req: Request, res: Response) => {
                 name,
                 price: Number(price),
                 description: description || null,
+                image_url: image_url || null,
                 is_available: is_available !== false,
             })
             .select(`*, category:categories(*)`)
@@ -208,13 +211,14 @@ router.post('/products', async (req: Request, res: Response) => {
 router.patch('/products/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, price, category_id, description, is_available } = req.body;
+        const { name, price, category_id, description, is_available, image_url } = req.body;
 
         const updateData: any = { updated_at: new Date().toISOString() };
-        if (name !== undefined) updateData.name = name;
+        if (name) updateData.name = name;
         if (price !== undefined) updateData.price = Number(price);
-        if (category_id !== undefined) updateData.category_id = category_id;
+        if (category_id) updateData.category_id = category_id;
         if (description !== undefined) updateData.description = description;
+        if (image_url !== undefined) updateData.image_url = image_url;
         if (is_available !== undefined) updateData.is_available = is_available;
 
         const { data, error } = await supabase
@@ -242,6 +246,57 @@ router.delete('/products/:id', async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Delete product error:', error);
         res.status(500).json({ error: 'Ürün silinemedi' });
+    }
+});
+
+// =================== IMAGE UPLOAD ===================
+
+// Upload image (base64) to Supabase Storage
+router.post('/upload-image', async (req: Request, res: Response) => {
+    try {
+        const { image, fileName } = req.body;
+
+        if (!image) {
+            return res.status(400).json({ error: 'Image data is required' });
+        }
+
+        // Parse base64 data
+        const matches = image.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+        if (!matches || matches.length !== 3) {
+            return res.status(400).json({ error: 'Invalid base64 image format' });
+        }
+
+        const contentType = matches[1];
+        const base64Data = matches[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        // Generate unique filename
+        const ext = contentType.split('/')[1] || 'png';
+        const uniqueName = fileName || `${uuidv4()}.${ext}`;
+        const filePath = `products/${uniqueName}`;
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+            .from('menu-images')
+            .upload(filePath, buffer, {
+                contentType,
+                upsert: true,
+            });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+            .from('menu-images')
+            .getPublicUrl(filePath);
+
+        res.json({
+            url: publicUrlData.publicUrl,
+            path: filePath,
+        });
+    } catch (error) {
+        console.error('Image upload error:', error);
+        res.status(500).json({ error: 'Görsel yüklenemedi' });
     }
 });
 
