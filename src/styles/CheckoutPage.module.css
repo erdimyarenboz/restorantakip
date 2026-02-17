@@ -51,6 +51,8 @@
     outline: none;
     transition: border-color 0.2s;
     font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .input:focus,

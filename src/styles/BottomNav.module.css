@@ -4,8 +4,10 @@
     left: 0;
     right: 0;
     height: var(--bottom-nav-height);
-    background-color: var(--color-surface);
-    border-top: 1px solid var(--color-border);
+    background: rgba(17, 24, 39, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     z-index: 100;
 }
@@ -17,7 +19,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-xs);
-    color: var(--color-text-secondary);
+    color: var(--color-text-muted);
     transition: all 0.2s;
     padding: var(--spacing-sm);
     background: none;
@@ -27,8 +29,8 @@
 
 .link:hover,
 .link.active {
-    color: var(--color-primary);
-    background-color: rgba(79, 70, 229, 0.05);
+    color: #10B981;
+    background-color: rgba(16, 185, 129, 0.08);
 }
 
 .logoutLink:hover {

@@ -9,10 +9,11 @@
     display: flex;
     gap: var(--spacing-xs);
     margin-bottom: var(--spacing-xl);
-    background: white;
+    background: var(--color-surface);
     padding: var(--spacing-xs);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .tabBtn {
@@ -30,25 +31,26 @@
 }
 
 .tabBtn:hover {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--color-text-primary);
 }
 
 .tabActive {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    background: linear-gradient(135deg, #10B981, #059669) !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
 /* ================== KASA PASSWORD GATE ================== */
 .passwordGate {
     text-align: center;
     padding: var(--spacing-2xl);
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     max-width: 400px;
     margin: var(--spacing-2xl) auto;
+    border: 1px solid var(--color-border);
 }
 
 .lockIcon {
@@ -75,16 +77,18 @@
     text-align: center;
     letter-spacing: 4px;
     transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .gateInput:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: #10B981;
 }
 
 .gateButton {
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #10B981, #059669);
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -96,10 +100,10 @@
 
 .gateButton:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
-/* ================== KASA (existing styles) ================== */
+/* ================== KASA ================== */
 .header {
     display: flex;
     justify-content: space-between;
@@ -139,7 +143,7 @@
 }
 
 .badge {
-    background: var(--color-primary);
+    background: #10B981;
     color: white;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-full);
@@ -151,9 +155,10 @@
 .empty {
     text-align: center;
     padding: var(--spacing-2xl) var(--spacing-lg);
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .emptyIcon {
@@ -181,19 +186,19 @@
 }
 
 .tableCard {
-    background: white;
+    background: var(--color-surface);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     cursor: pointer;
     transition: all 0.2s;
-    border: 2px solid transparent;
+    border: 2px solid var(--color-border);
 }
 
 .tableCard:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-    border-color: var(--color-primary);
+    border-color: #10B981;
 }
 
 .tableHeader {
@@ -204,7 +209,7 @@
 }
 
 .tableBadge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #10B981, #059669);
     color: white;
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--radius-md);
@@ -220,14 +225,14 @@
 .tableTotal {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: #10B981;
     margin: var(--spacing-lg) 0;
 }
 
 .viewButton {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.05);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     color: var(--color-text-primary);
@@ -237,9 +242,9 @@
 }
 
 .viewButton:hover {
-    background: var(--color-primary);
+    background: #10B981;
     color: white;
-    border-color: var(--color-primary);
+    border-color: #10B981;
 }
 
 /* Modal */
@@ -249,7 +254,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -258,13 +263,14 @@
 }
 
 .modalContent {
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     max-width: 600px;
     width: 100%;
     max-height: 90vh;
     overflow: auto;
     box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
 }
 
 .modalHeader {
@@ -298,7 +304,7 @@
 }
 
 .closeButton:hover {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--color-text-primary);
 }
 
@@ -311,7 +317,7 @@
 }
 
 .orderCard {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.03);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
@@ -351,7 +357,7 @@
 }
 
 .itemQuantity {
-    color: var(--color-primary);
+    color: #10B981;
     font-weight: 600;
     min-width: 30px;
 }
@@ -378,7 +384,7 @@
 .modalFooter {
     padding: var(--spacing-lg);
     border-top: 1px solid var(--color-border);
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .totalSection {
@@ -397,13 +403,13 @@
 .totalAmount {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-primary);
+    color: #10B981;
 }
 
 .paymentButton {
     width: 100%;
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #10B981, #059669);
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -415,7 +421,7 @@
 
 .paymentButton:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .paymentButton:disabled {
@@ -425,10 +431,11 @@
 
 /* ================== REPORTS ================== */
 .reportSection {
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .sectionTitle {
@@ -449,7 +456,7 @@
     display: flex;
     gap: var(--spacing-xs);
     margin-bottom: var(--spacing-lg);
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.03);
     padding: var(--spacing-xs);
     border-radius: var(--radius-md);
 }
@@ -472,8 +479,8 @@
 }
 
 .periodActive {
-    background: white !important;
-    color: var(--color-primary) !important;
+    background: var(--color-surface-elevated) !important;
+    color: #10B981 !important;
     box-shadow: var(--shadow-sm);
 }
 
@@ -487,7 +494,7 @@
 .sourceBtn {
     padding: var(--spacing-xs) var(--spacing-md);
     border: 2px solid var(--color-border);
-    background: white;
+    background: transparent;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -498,15 +505,15 @@
 }
 
 .sourceBtn:hover {
-    border-color: var(--color-primary);
+    border-color: #10B981;
     color: var(--color-text-primary);
 }
 
 .sourceActive {
-    background: var(--color-primary) !important;
+    background: #10B981 !important;
     color: white !important;
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    border-color: #10B981 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .dateRange {
@@ -537,16 +544,18 @@
     border-radius: var(--radius-md);
     font-size: 0.9rem;
     transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .dateInput:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: #10B981;
 }
 
 .dateSearchBtn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--color-primary);
+    background: #10B981;
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -573,7 +582,7 @@
 }
 
 .statCard {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.03);
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     text-align: center;
@@ -626,13 +635,13 @@
 }
 
 .reportRow:nth-child(even) {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .reportCode {
     font-family: monospace;
     font-weight: 600;
-    color: var(--color-primary);
+    color: #10B981;
 }
 
 .reportAmount {
@@ -661,10 +670,11 @@
 
 /* ================== MANAGEMENT (Tables & Waiters) ================== */
 .mgmtSection {
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .addForm {
@@ -682,6 +692,8 @@
     border-radius: var(--radius-md);
     font-size: 0.95rem;
     transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .addInputSmall {
@@ -692,17 +704,19 @@
     border-radius: var(--radius-md);
     font-size: 0.95rem;
     transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .addInput:focus,
 .addInputSmall:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: #10B981;
 }
 
 .addBtn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #10B981, #059669);
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -714,7 +728,7 @@
 
 .addBtn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .mgmtList {
@@ -728,14 +742,14 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     transition: all 0.2s;
 }
 
 .mgmtCard:hover {
-    border-color: var(--color-primary);
+    border-color: #10B981;
     box-shadow: var(--shadow-sm);
 }
 
@@ -763,9 +777,9 @@
 
 .deleteBtn {
     padding: var(--spacing-xs) var(--spacing-md);
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 0.85rem;
@@ -830,9 +844,10 @@
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .platformLabel {
@@ -856,17 +871,17 @@
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
-    background: white;
+    background: var(--color-surface);
     color: var(--color-text);
 }
 
 .platformBtn:hover {
-    border-color: #888;
+    border-color: var(--color-text-muted);
 }
 
 .platformActive {
     border-color: transparent !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transform: scale(1.05);
 }
 
@@ -878,10 +893,11 @@
 }
 
 .disMenu {
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
 }
 
 .disSubtitle {
@@ -907,18 +923,18 @@
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s;
-    background: var(--color-background);
+    background: rgba(255, 255, 255, 0.03);
     text-align: center;
 }
 
 .disProductCard:hover {
-    border-color: #667eea;
-    background: #f0f0ff;
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .disProductSelected {
-    border-color: #667eea !important;
-    background: #eef0ff !important;
+    border-color: #10B981 !important;
+    background: rgba(16, 185, 129, 0.12) !important;
 }
 
 .disProductName {
@@ -936,7 +952,7 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #667eea;
+    background: #10B981;
     color: white;
     width: 24px;
     height: 24px;
@@ -946,15 +962,15 @@
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
-    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
 }
 
 .disCartPanel {
-    background: white;
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
-    border: 2px solid #667eea;
+    border: 2px solid #10B981;
     position: sticky;
     top: var(--spacing-lg);
 }
@@ -971,7 +987,7 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-sm);
-    background: var(--color-background);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: var(--radius-sm);
 }
 
@@ -1003,7 +1019,7 @@
     height: 28px;
     border: 1px solid var(--color-border);
     border-radius: 50%;
-    background: white;
+    background: var(--color-surface);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1011,18 +1027,20 @@
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.15s;
+    color: var(--color-text);
 }
 
 .disQtyBtn:hover {
-    background: #667eea;
+    background: #10B981;
     color: white;
-    border-color: #667eea;
+    border-color: #10B981;
 }
 
 .disQtyValue {
     font-weight: 700;
     min-width: 20px;
     text-align: center;
+    color: var(--color-text);
 }
 
 .disNoteInput {
@@ -1034,11 +1052,13 @@
     resize: vertical;
     font-family: inherit;
     margin-bottom: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
 }
 
 .disNoteInput:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #10B981;
 }
 
 .disCartFooter {
@@ -1056,7 +1076,7 @@
 }
 
 .disSubmitBtn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #10B981, #059669);
     color: white;
     padding: var(--spacing-sm) var(--spacing-lg);
     border-radius: var(--radius-md);
@@ -1068,7 +1088,7 @@
 
 .disSubmitBtn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .disSubmitBtn:disabled {
@@ -1085,8 +1105,8 @@
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: linear-gradient(135deg, #667eea20, #764ba220);
-    border: 2px solid #667eea40;
+    background: rgba(16, 185, 129, 0.08);
+    border: 2px solid rgba(16, 185, 129, 0.25);
     border-radius: var(--radius-lg);
 }
 
@@ -1094,32 +1114,32 @@
     font-weight: 700;
     font-size: 1rem;
     white-space: nowrap;
-    color: var(--text-primary);
+    color: var(--color-text-primary);
 }
 
 .restaurantSelect {
     flex: 1;
     padding: 0.6rem 1rem;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     font-size: 1rem;
     font-weight: 600;
-    background: var(--card-bg);
-    color: var(--text-primary);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
     cursor: pointer;
     transition: border-color 0.2s;
 }
 
 .restaurantSelect:focus {
-    border-color: var(--color-primary);
+    border-color: #10B981;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .menuMgmtBlock {
-    background: var(--card-bg);
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-border);
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
 }
@@ -1134,11 +1154,12 @@
 .menuBlockHeader h3 {
     margin: 0;
     font-size: 1.1rem;
+    color: var(--color-text-primary);
 }
 
 .addBtnSmall {
     padding: var(--spacing-xs) var(--spacing-md);
-    background: var(--primary-color);
+    background: #10B981;
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -1154,8 +1175,8 @@
 }
 
 .menuForm {
-    background: rgba(99, 102, 241, 0.04);
-    border: 1px dashed var(--primary-color);
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px dashed #10B981;
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-md);
@@ -1176,34 +1197,34 @@
 .menuInput {
     flex: 1;
     padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     font-size: 0.9rem;
-    background: var(--card-bg);
-    color: var(--text-color);
+    background: var(--color-surface);
+    color: var(--color-text);
     transition: border-color 0.2s;
 }
 
 .menuInput:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .menuIconSelect {
     width: 55px;
     padding: var(--spacing-sm);
     font-size: 1.2rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    background: var(--card-bg);
+    background: var(--color-surface);
     cursor: pointer;
     text-align: center;
 }
 
 .menuSaveBtn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--success-color);
+    background: #10B981;
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -1220,7 +1241,7 @@
 
 .menuCancelBtn {
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--danger-color);
+    background: #EF4444;
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -1246,27 +1267,28 @@
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: rgba(99, 102, 241, 0.03);
-    border: 1px solid var(--border-color);
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     transition: all 0.2s;
 }
 
 .menuCatItem:hover {
-    border-color: var(--primary-color);
-    background: rgba(99, 102, 241, 0.06);
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.08);
 }
 
 .menuCatInfo {
     flex: 1;
     font-weight: 600;
     font-size: 0.95rem;
+    color: var(--color-text);
 }
 
 .menuCatCount {
     font-size: 0.8rem;
-    color: var(--text-secondary);
-    background: rgba(99, 102, 241, 0.08);
+    color: var(--color-text-secondary);
+    background: rgba(16, 185, 129, 0.1);
     padding: 2px 8px;
     border-radius: 999px;
 }
@@ -1292,7 +1314,7 @@
 }
 
 .editBtnSmall:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(16, 185, 129, 0.1);
 }
 
 .deleteBtnSmall:hover {
@@ -1309,24 +1331,24 @@
 
 .menuFilterBtn {
     padding: var(--spacing-xs) var(--spacing-md);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-border);
     border-radius: 999px;
-    background: var(--card-bg);
+    background: var(--color-surface);
     cursor: pointer;
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     transition: all 0.2s;
 }
 
 .menuFilterBtn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    border-color: #10B981;
+    color: #10B981;
 }
 
 .menuFilterActive {
-    background: var(--primary-color);
+    background: #10B981;
     color: white;
-    border-color: var(--primary-color);
+    border-color: #10B981;
 }
 
 /* Product list */
@@ -1341,20 +1363,20 @@
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     transition: all 0.2s;
 }
 
 .menuProductItem:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+    border-color: #10B981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
 }
 
 .menuProductUnavailable {
     opacity: 0.5;
-    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 0, 0, 0.02) 10px, rgba(0, 0, 0, 0.02) 20px);
+    background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.02) 10px, rgba(255, 255, 255, 0.02) 20px);
 }
 
 .menuProductInfo {
@@ -1367,22 +1389,23 @@
 .menuProductName {
     font-weight: 600;
     font-size: 0.95rem;
+    color: var(--color-text);
 }
 
 .menuProductDesc {
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
 }
 
 .menuProductCat {
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
 }
 
 .menuProductPrice {
     font-weight: 700;
     font-size: 1rem;
-    color: var(--success-color);
+    color: #10B981;
     white-space: nowrap;
 }
 
@@ -1407,13 +1430,13 @@
 }
 
 .toggleOn {
-    background: rgba(34, 197, 94, 0.1);
-    border-color: var(--success-color);
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #10B981;
 }
 
 .toggleOff {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #EF4444;
 }
 
 .toggleBtn:hover {

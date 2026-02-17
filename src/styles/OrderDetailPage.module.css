@@ -44,23 +44,23 @@
 }
 
 .status.blue {
-    background-color: #DBEAFE;
-    color: #1E40AF;
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
 }
 
 .status.orange {
-    background-color: #FED7AA;
-    color: #C2410C;
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
 }
 
 .status.green {
-    background-color: #D1FAE5;
-    color: #065F46;
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34d399;
 }
 
 .status.red {
-    background-color: #FEE2E2;
-    color: #991B1B;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
 }
 
 .date {

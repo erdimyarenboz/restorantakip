@@ -14,10 +14,11 @@
 .title {
     font-size: 1.75rem;
     margin: 0;
+    color: var(--color-text-primary);
 }
 
 .badge {
-    background-color: var(--color-primary);
+    background-color: #10B981;
     color: white;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-lg);
@@ -48,7 +49,7 @@
 }
 
 .orderCard {
-    background-color: white;
+    background-color: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
@@ -99,7 +100,7 @@
 
 .duration {
     font-size: 0.875rem;
-    color: #DC2626;
+    color: #f87171;
     font-weight: 600;
 }
 
@@ -116,8 +117,9 @@
 .items {
     margin: var(--spacing-md) 0;
     padding: var(--spacing-md);
-    background-color: var(--color-background);
+    background-color: rgba(255, 255, 255, 0.03);
     border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
 }
 
 .item {
@@ -129,7 +131,7 @@
 
 .itemQuantity {
     font-weight: 700;
-    color: var(--color-primary);
+    color: #10B981;
     min-width: 30px;
 }
 
@@ -140,10 +142,11 @@
 .note {
     margin-top: var(--spacing-md);
     padding: var(--spacing-sm);
-    background-color: #FEF3C7;
+    background-color: rgba(245, 158, 11, 0.15);
     border-radius: var(--radius-md);
     font-size: 0.875rem;
-    color: #78350F;
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .orderFooter {
@@ -214,11 +217,11 @@
 
 .courierTag {
     font-size: 0.85rem;
-    color: #6b3fa0;
+    color: #a78bfa;
     font-weight: 600;
     margin-bottom: var(--spacing-md);
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: #f3f0ff;
+    background: rgba(167, 139, 250, 0.1);
     border-radius: var(--radius-sm);
     display: inline-block;
 }

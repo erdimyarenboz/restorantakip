@@ -6,31 +6,68 @@ import styles from '../styles/LoginPage.module.css';
 
 const ADMIN_PASSWORD = '12345';
 
+type UserRole = 'customer' | 'admin' | 'waiter' | 'kitchen';
+
+interface RoleOption {
+    id: UserRole;
+    label: string;
+    description: string;
+    icon: string;
+    requiresPassword: boolean;
+}
+
+const roles: RoleOption[] = [
+    { id: 'customer', label: 'Müşteri', description: 'Sipariş vermek için', icon: '👤', requiresPassword: false },
+    { id: 'admin', label: 'Restoran Yönetici', description: 'Tam yönetim erişimi', icon: '👨‍💼', requiresPassword: true },
+    { id: 'waiter', label: 'Garson', description: 'Sipariş yönetimi', icon: '🧑‍🍳', requiresPassword: true },
+    { id: 'kitchen', label: 'Mutfak', description: 'Sipariş hazırlama', icon: '🍳', requiresPassword: false },
+];
+
 export default function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
     const { showToast } = useToast();
+    const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
     const [adminPassword, setAdminPassword] = useState('');
     const [showPasswordInput, setShowPasswordInput] = useState(false);
 
-    const handleAdminClick = () => {
-        setShowPasswordInput(true);
+    const handleRoleSelect = (role: UserRole) => {
+        setSelectedRole(role);
     };
 
-    const handleAdminLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (adminPassword === ADMIN_PASSWORD) {
-            login('admin');
-            navigate('/kitchen');
+    const handleContinue = () => {
+        const role = roles.find(r => r.id === selectedRole);
+        if (role?.requiresPassword) {
+            setShowPasswordInput(true);
         } else {
-            showToast('Hatalı şifre! (Şifre: 12345)', 'error');
-            setAdminPassword('');
+            handleDirectLogin(selectedRole);
         }
     };
 
-    const handleCustomerLogin = () => {
-        login('customer');
-        navigate('/');
+    const handleDirectLogin = (role: UserRole) => {
+        if (role === 'customer') {
+            login('customer');
+            navigate('/');
+        } else if (role === 'kitchen') {
+            login('admin');
+            navigate('/kitchen');
+        }
+    };
+
+    const handlePasswordLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (adminPassword === ADMIN_PASSWORD) {
+            if (selectedRole === 'admin') {
+                login('admin');
+                navigate('/admin');
+            } else if (selectedRole === 'waiter') {
+                login('admin');
+                navigate('/waiter');
+            }
+        } else {
+            showToast('Hatalı şifre!', 'error');
+            setAdminPassword('');
+        }
     };
 
     const handleBackToSelection = () => {
@@ -41,50 +78,46 @@ export default function LoginPage() {
     return (
         <div className={styles.page}>
             <div className={styles.container}>
-                <div className={styles.card}>
-                    <div className={styles.header}>
-                        <div className={styles.logo}>🍽️</div>
-                        <h1 className={styles.title}>Restoran Sipariş Sistemi</h1>
-                        <p className={styles.subtitle}>Giriş yaparak devam edin</p>
-                    </div>
-
-                    {!showPasswordInput ? (
-                        <div className={styles.buttons}>
-                            <button
-                                className={`${styles.loginButton} ${styles.admin}`}
-                                onClick={handleAdminClick}
-                            >
-                                <span className={styles.buttonIcon}>👨‍🍳</span>
-                                <div className={styles.buttonContent}>
-                                    <span className={styles.buttonTitle}>Restoran Admin</span>
-                                    <span className={styles.buttonDesc}>Mutfak, Garson, Kasa</span>
-                                </div>
-                            </button>
-
-                            <button
-                                className={`${styles.loginButton} ${styles.customer}`}
-                                onClick={handleCustomerLogin}
-                            >
-                                <span className={styles.buttonIcon}>📱</span>
-                                <div className={styles.buttonContent}>
-                                    <span className={styles.buttonTitle}>Sipariş Girişi</span>
-                                    <span className={styles.buttonDesc}>Menü, Sepet, Siparişler</span>
-                                </div>
-                            </button>
+                {!showPasswordInput ? (
+                    <div className={styles.card}>
+                        <div className={styles.header}>
+                            <div className={styles.logoIcon}>📋</div>
+                            <h1 className={styles.title}>Hoş Geldiniz</h1>
+                            <p className={styles.subtitle}>Devam etmek için giriş yapın</p>
                         </div>
-                    ) : (
-                        <form onSubmit={handleAdminLogin} className={styles.passwordForm}>
-                            <div className={styles.passwordHeader}>
-                                <button
-                                    type="button"
-                                    onClick={handleBackToSelection}
-                                    className={styles.backButton}
-                                >
-                                    ← Geri
-                                </button>
-                                <span className={styles.passwordTitle}>👨‍🍳 Admin Girişi</span>
-                            </div>
 
+                        <div className={styles.roleSection}>
+                            <p className={styles.roleLabel}>Rol Seçimi</p>
+                            <div className={styles.roleGrid}>
+                                {roles.map((role) => (
+                                    <button
+                                        key={role.id}
+                                        className={`${styles.roleButton} ${selectedRole === role.id ? styles.roleActive : ''}`}
+                                        onClick={() => handleRoleSelect(role.id)}
+                                    >
+                                        <span className={styles.roleIcon}>{role.icon}</span>
+                                        <span className={styles.roleName}>{role.label}</span>
+                                        <span className={styles.roleDesc}>{role.description}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button className={styles.continueButton} onClick={handleContinue}>
+                            <span>→</span> Devam Et
+                        </button>
+                    </div>
+                ) : (
+                    <div className={styles.card}>
+                        <div className={styles.header}>
+                            <div className={styles.logoIcon}>🔐</div>
+                            <h1 className={styles.title}>
+                                {selectedRole === 'admin' ? 'Yönetici Girişi' : 'Garson Girişi'}
+                            </h1>
+                            <p className={styles.subtitle}>Devam etmek için şifre girin</p>
+                        </div>
+
+                        <form onSubmit={handlePasswordLogin} className={styles.passwordForm}>
                             <div className={styles.passwordField}>
                                 <label htmlFor="password" className={styles.passwordLabel}>
                                     Şifre
@@ -100,18 +133,20 @@ export default function LoginPage() {
                                 />
                             </div>
 
-                            <button type="submit" className={styles.submitButton}>
+                            <button type="submit" className={styles.continueButton}>
                                 Giriş Yap
                             </button>
-                        </form>
-                    )}
 
-                    <div className={styles.footer}>
-                        <p className={styles.note}>
-                            ⚠️ Demo sistem - Admin şifresi: 12345
-                        </p>
+                            <button
+                                type="button"
+                                onClick={handleBackToSelection}
+                                className={styles.backButton}
+                            >
+                                ← Geri Dön
+                            </button>
+                        </form>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

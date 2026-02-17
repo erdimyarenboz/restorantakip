@@ -3,21 +3,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #020617 0%, #0a1628 30%, #0c0a3e 60%, #020617 100%);
     padding: var(--spacing-lg);
 }
 
 .container {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
 }
 
 .card {
-    background: white;
+    background: rgba(17, 24, 39, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--radius-xl);
-    padding: var(--spacing-xxl);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.4s ease-out;
+    padding: var(--spacing-2xl);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
@@ -34,126 +37,125 @@
 
 .header {
     text-align: center;
-    margin-bottom: var(--spacing-xxl);
+    margin-bottom: var(--spacing-xl);
 }
 
-.logo {
-    font-size: 4rem;
-    margin-bottom: var(--spacing-md);
-    animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
+.logoIcon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--spacing-lg);
+    background: linear-gradient(135deg, #10B981, #059669);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
 }
 
 .title {
-    font-size: 1.75rem;
-    margin: 0 0 var(--spacing-sm) 0;
-    color: var(--color-text);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 var(--spacing-xs) 0;
 }
 
 .subtitle {
     font-size: 1rem;
-    color: var(--color-text-secondary);
+    color: #94a3b8;
     margin: 0;
 }
 
-.buttons {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+/* Role Selection */
+.roleSection {
     margin-bottom: var(--spacing-xl);
 }
 
-.loginButton {
+.roleLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.roleGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.roleButton {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
-    border: 2px solid transparent;
-    background: var(--color-background);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
 }
 
-.loginButton:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+.roleButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
 }
 
-.loginButton.admin {
-    border-color: #F59E0B;
+.roleActive {
+    background: linear-gradient(135deg, #10B981, #059669) !important;
+    border-color: #10B981 !important;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
 }
 
-.loginButton.admin:hover {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border-color: #D97706;
+.roleActive .roleName,
+.roleActive .roleDesc {
+    color: white !important;
 }
 
-.loginButton.customer {
-    border-color: #10B981;
+.roleIcon {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-xs);
 }
 
-.loginButton.customer:hover {
-    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
-    border-color: #059669;
+.roleName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f1f5f9;
 }
 
-.loginButton.superAdmin {
-    border-color: #6366F1;
+.roleDesc {
+    font-size: 0.8rem;
+    color: #94a3b8;
 }
 
-.loginButton.superAdmin:hover {
-    background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
-    border-color: #4F46E5;
-}
-
-.buttonIcon {
-    font-size: 2.5rem;
-    flex-shrink: 0;
-}
-
-.buttonContent {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    flex: 1;
-}
-
-.buttonTitle {
-    font-size: 1.25rem;
+/* Continue Button */
+.continueButton {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: var(--color-text);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
-.buttonDesc {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
+.continueButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
-.footer {
-    text-align: center;
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--color-border);
-}
-
-.note {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    margin: 0;
-}
-
+/* Password Form */
 .passwordForm {
     display: flex;
     flex-direction: column;
@@ -171,33 +173,6 @@
     }
 }
 
-.passwordHeader {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
-.backButton {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-md);
-    background: var(--color-background);
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.backButton:hover {
-    background: var(--color-border);
-}
-
-.passwordTitle {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-text);
-}
-
 .passwordField {
     display: flex;
     flex-direction: column;
@@ -207,39 +182,44 @@
 .passwordLabel {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: #94a3b8;
 }
 
 .passwordInput {
     padding: var(--spacing-md);
-    border: 2px solid var(--color-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     font-size: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #f1f5f9;
     transition: all 0.2s;
 }
 
 .passwordInput:focus {
-    border-color: var(--color-primary);
+    border-color: #10B981;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
-.submitButton {
-    padding: var(--spacing-md) var(--spacing-lg);
+.backButton {
+    width: 100%;
+    padding: var(--spacing-sm);
     border-radius: var(--radius-md);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 1rem;
-    font-weight: 700;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
-.submitButton:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+.backButton:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f1f5f9;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .card {
         padding: var(--spacing-xl);
     }
@@ -248,11 +228,7 @@
         font-size: 1.5rem;
     }
 
-    .buttonIcon {
-        font-size: 2rem;
-    }
-
-    .buttonTitle {
-        font-size: 1.125rem;
+    .roleGrid {
+        grid-template-columns: 1fr;
     }
 }

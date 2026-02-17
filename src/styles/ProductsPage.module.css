@@ -12,6 +12,7 @@
     display: flex;
     gap: var(--spacing-md);
     flex-wrap: wrap;
+    border: 1px solid var(--color-border);
 }
 
 .categorySelect,
@@ -23,11 +24,22 @@
     border-radius: var(--radius-md);
     outline: none;
     transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text);
+}
+
+.categorySelect option {
+    background: var(--color-surface);
+    color: var(--color-text);
 }
 
 .categorySelect:focus,
 .searchInput:focus {
-    border-color: var(--color-primary);
+    border-color: #10B981;
+}
+
+.searchInput::placeholder {
+    color: var(--color-text-muted);
 }
 
 .grid {
