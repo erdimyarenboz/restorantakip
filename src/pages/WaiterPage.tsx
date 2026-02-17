@@ -124,13 +124,14 @@ export default function WaiterPage() {
                                         <div key={order.orderId} className={styles.orderCard}>
                                             <div className={styles.orderHeader}>
                                                 <span className={styles.orderId}>#{order.orderId}</span>
-                                                <span className={styles.orderTime}>
-                                                    {formatDate(order.createdAt)}
+                                                <span className={`${styles.statusBadge} ${order.status === 'Hazır' ? styles.statusReady : styles.statusKitchen}`}>
+                                                    {order.status === 'Hazır' ? '✅ Hazır' : '🍳 Mutfakta'}
                                                 </span>
                                             </div>
 
-                                            <div className={styles.waiter}>
-                                                Garson: <strong>{order.table.waiterName}</strong>
+                                            <div className={styles.orderMeta}>
+                                                <span className={styles.orderTime}>{formatDate(order.createdAt)}</span>
+                                                <span className={styles.waiter}>Garson: <strong>{order.table.waiterName}</strong></span>
                                             </div>
 
                                             <div className={styles.items}>
@@ -152,12 +153,16 @@ export default function WaiterPage() {
                                                 <div className={styles.total}>
                                                     {formatCurrency(order.totals.total)}
                                                 </div>
-                                                <button
-                                                    className={styles.deliverButton}
-                                                    onClick={() => handleMarkDelivered(order)}
-                                                >
-                                                    ✓ Teslim Edildi
-                                                </button>
+                                                {order.status === 'Hazır' ? (
+                                                    <button
+                                                        className={styles.deliverButton}
+                                                        onClick={() => handleMarkDelivered(order)}
+                                                    >
+                                                        ✓ Teslim Edildi
+                                                    </button>
+                                                ) : (
+                                                    <span className={styles.waitingLabel}>⏳ Hazırlanıyor...</span>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

@@ -283,6 +283,34 @@
     white-space: nowrap;
 }
 
+.orderMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.waitingLabel {
+    font-size: 0.875rem;
+    color: #fbbf24;
+    font-weight: 600;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
 .courierButton:hover {
     background: linear-gradient(135deg, #7c3aed, #5b21b6);
     transform: scale(1.05);
