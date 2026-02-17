@@ -12,6 +12,7 @@ const getStatusDisplay = (status: OrderStatus) => {
         'Mutfakta': { label: '👨‍🍳 Hazırlanıyor', color: '#f59e0b' },
         'Hazır': { label: '✅ Hazır', color: '#10b981' },
         'Teslim Edildi': { label: '🚀 Teslim Edildi', color: '#3b82f6' },
+        'Kuryeye Teslim Edildi': { label: '🏍️ Kuryeye Teslim', color: '#8b5cf6' },
         'Ödendi': { label: '✓ Ödendi', color: '#6b7280' },
         'İptal': { label: '✕ İptal', color: '#ef4444' },
     };

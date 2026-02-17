@@ -156,7 +156,7 @@ export default function AdminPage() {
         }
     };
 
-    const processPOSPayment = async (amount: number, tableNumber: number) => {
+    const processPOSPayment = async (amount: number, _tableNumber: number) => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         return { success: true, transactionId: `TXN-${Date.now()}`, amount, timestamp: new Date().toISOString() };
     };

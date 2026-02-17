@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { menuAPI } from '../services/api';
-import type { Product, MenuCategory } from '../types';
+// types imported from ../types if needed in the future
 
 interface Category {
     id: string;
