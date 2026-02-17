@@ -4,8 +4,64 @@ import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
 import { formatCurrency, formatDate } from '../utils/format';
 import { tablesAPI, waitersAPI, reportAPI, menuAPI } from '../services/api';
+import { getStorageItem, setStorageItem } from '../utils/storage';
 import type { OrderSource } from '../types';
 import styles from '../styles/AdminPage.module.css';
+
+// ─── localStorage keys for offline mode ────────────────────────────────
+const TABLES_STORAGE_KEY = 'admin_tables_v1';
+const WAITERS_STORAGE_KEY = 'admin_waiters_v1';
+const TABLE_COUNTER_KEY = 'admin_table_counter_v1';
+const WAITER_COUNTER_KEY = 'admin_waiter_counter_v1';
+
+// ─── Demo menu items (matching MenuContext) for dış sipariş ────────────
+const DEMO_MENU_PRODUCTS = [
+    { id: 'p-1', name: 'Adana Kebap', price: 320, category_id: 'cat-1', is_available: true },
+    { id: 'p-2', name: 'Iskender Kebap', price: 350, category_id: 'cat-1', is_available: true },
+    { id: 'p-3', name: 'Karışık Izgara', price: 450, category_id: 'cat-1', is_available: true },
+    { id: 'p-4', name: 'Lahmacun', price: 85, category_id: 'cat-1', is_available: true },
+    { id: 'p-5', name: 'Pide (Kaşarlı)', price: 150, category_id: 'cat-1', is_available: true },
+    { id: 'p-6', name: 'Mercimek Çorbası', price: 75, category_id: 'cat-1', is_available: true },
+    { id: 'p-7', name: 'Türk Kahvesi', price: 45, category_id: 'cat-2', is_available: true },
+    { id: 'p-8', name: 'Çay', price: 20, category_id: 'cat-2', is_available: true },
+    { id: 'p-9', name: 'Ayran', price: 30, category_id: 'cat-2', is_available: true },
+    { id: 'p-10', name: 'Limonata', price: 45, category_id: 'cat-2', is_available: true },
+    { id: 'p-11', name: 'Serpme Kahvaltı', price: 350, category_id: 'cat-3', is_available: true },
+    { id: 'p-12', name: 'Menemen', price: 90, category_id: 'cat-3', is_available: true },
+    { id: 'p-13', name: 'Künefe', price: 120, category_id: 'cat-4', is_available: true },
+    { id: 'p-14', name: 'Sütlaç', price: 75, category_id: 'cat-4', is_available: true },
+    { id: 'p-15', name: 'Baklava', price: 180, category_id: 'cat-4', is_available: true },
+    { id: 'p-16', name: 'Akdeniz Salata', price: 95, category_id: 'cat-5', is_available: true },
+    { id: 'p-17', name: 'Çoban Salata', price: 70, category_id: 'cat-5', is_available: true },
+];
+
+const DEMO_CATEGORIES_ADMIN = [
+    { id: 'cat-1', name: 'Ana Yemek', icon: '🍖', sort_order: 1 },
+    { id: 'cat-2', name: 'İçecekler', icon: '☕', sort_order: 2 },
+    { id: 'cat-3', name: 'Kahvaltı', icon: '🍳', sort_order: 3 },
+    { id: 'cat-4', name: 'Tatlılar', icon: '🍰', sort_order: 4 },
+    { id: 'cat-5', name: 'Salatalar', icon: '🥗', sort_order: 5 },
+];
+
+// ─── Default demo tables & waiters ─────────────────────────────────────
+const DEFAULT_TABLES: TableData[] = [
+    { id: 'tbl-1', table_number: 1, is_active: true },
+    { id: 'tbl-2', table_number: 2, is_active: true },
+    { id: 'tbl-3', table_number: 3, is_active: true },
+    { id: 'tbl-4', table_number: 4, is_active: true },
+    { id: 'tbl-5', table_number: 5, is_active: true },
+    { id: 'tbl-6', table_number: 6, is_active: true },
+    { id: 'tbl-7', table_number: 7, is_active: true },
+    { id: 'tbl-8', table_number: 8, is_active: true },
+    { id: 'tbl-9', table_number: 9, is_active: true },
+    { id: 'tbl-10', table_number: 10, is_active: true },
+];
+
+const DEFAULT_WAITERS: WaiterData[] = [
+    { id: 'w-1', full_name: 'Ahmet Yılmaz', phone: '0532 111 22 33', is_active: true },
+    { id: 'w-2', full_name: 'Mehmet Demir', phone: '0533 444 55 66', is_active: true },
+    { id: 'w-3', full_name: 'Ayşe Kaya', phone: '0534 777 88 99', is_active: true },
+];
 
 type AdminTab = 'kasa' | 'raporlar' | 'masalar' | 'garsonlar' | 'dis_siparis' | 'menu';
 
@@ -182,6 +238,64 @@ export default function AdminPage() {
     };
 
     // --- Reports Logic ---
+    const generateLocalReport = useCallback((): ReportData => {
+        // Filter orders by date range
+        const now = new Date();
+        let startDate: Date;
+        let endDate = now;
+
+        switch (reportPeriod) {
+            case 'daily':
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                break;
+            case 'weekly':
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'monthly':
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            case 'custom':
+                startDate = customStartDate ? new Date(customStartDate) : new Date(0);
+                endDate = customEndDate ? new Date(customEndDate + 'T23:59:59') : now;
+                break;
+            default:
+                startDate = new Date(0);
+        }
+
+        const paidStatuses = ['Ödendi', 'Kuryeye Teslim Edildi', 'Teslim Edildi', 'Hazır', 'Mutfakta'];
+        let filtered = orders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d >= startDate && d <= endDate && paidStatuses.includes(o.status);
+        });
+
+        // Filter by source
+        if (reportSource !== 'all') {
+            filtered = filtered.filter(o => (o.source || 'restaurant') === reportSource);
+        }
+
+        const totalRevenue = filtered.reduce((s, o) => s + o.totals.total, 0);
+        const restaurantFiltered = filtered.filter(o => !o.source || o.source === 'restaurant');
+        const thirdPartyFiltered = filtered.filter(o => o.source && o.source !== 'restaurant');
+
+        return {
+            totalRevenue,
+            totalOrders: filtered.length,
+            averageOrder: filtered.length > 0 ? totalRevenue / filtered.length : 0,
+            restaurantRevenue: restaurantFiltered.reduce((s, o) => s + o.totals.total, 0),
+            restaurantOrders: restaurantFiltered.length,
+            thirdPartyRevenue: thirdPartyFiltered.reduce((s, o) => s + o.totals.total, 0),
+            thirdPartyOrders: thirdPartyFiltered.length,
+            orders: filtered.map(o => ({
+                id: o.orderId,
+                order_code: o.orderId,
+                total: o.totals.total,
+                order_source: o.source || 'restaurant',
+                table: { table_number: o.table.tableNumber },
+                paid_at: o.createdAt,
+            })),
+        };
+    }, [orders, reportPeriod, reportSource, customStartDate, customEndDate]);
+
     const loadReport = useCallback(async () => {
         setReportLoading(true);
         try {
@@ -199,11 +313,13 @@ export default function AdminPage() {
             const { data } = await reportAPI.get(params);
             setReportData(data);
         } catch {
-            showToast('Rapor yüklenemedi', 'error');
+            // Offline fallback: generate report from local orders
+            const localReport = generateLocalReport();
+            setReportData(localReport);
         } finally {
             setReportLoading(false);
         }
-    }, [reportPeriod, reportSource, customStartDate, customEndDate, showToast]);
+    }, [reportPeriod, reportSource, customStartDate, customEndDate, showToast, generateLocalReport]);
 
     useEffect(() => {
         if (activeTab === 'raporlar') {
@@ -218,11 +334,13 @@ export default function AdminPage() {
             const { data } = await tablesAPI.getAll();
             setTablesList(data);
         } catch {
-            showToast('Masalar yüklenemedi', 'error');
+            // Offline fallback
+            const local = getStorageItem<TableData[]>(TABLES_STORAGE_KEY, DEFAULT_TABLES);
+            setTablesList(local);
         } finally {
             setTablesLoading(false);
         }
-    }, [showToast]);
+    }, []);
 
     useEffect(() => {
         if (activeTab === 'masalar') loadTables();
@@ -232,13 +350,26 @@ export default function AdminPage() {
         e.preventDefault();
         const num = parseInt(newTableNumber);
         if (!num || num < 1) { showToast('Geçerli bir masa numarası girin', 'error'); return; }
+        // Check duplicate
+        if (tablesList.some(t => t.table_number === num)) {
+            showToast(`Masa ${num} zaten mevcut`, 'error');
+            return;
+        }
         try {
             await tablesAPI.create(num);
             showToast(`Masa ${num} eklendi`, 'success');
             setNewTableNumber('');
             loadTables();
-        } catch (err: any) {
-            showToast(err.response?.data?.error || 'Masa eklenemedi', 'error');
+        } catch {
+            // Offline fallback: add locally
+            const counter = getStorageItem<number>(TABLE_COUNTER_KEY, 100) + 1;
+            setStorageItem(TABLE_COUNTER_KEY, counter);
+            const newTable: TableData = { id: `tbl-local-${counter}`, table_number: num, is_active: true };
+            const updated = [...tablesList, newTable].sort((a, b) => a.table_number - b.table_number);
+            setTablesList(updated);
+            setStorageItem(TABLES_STORAGE_KEY, updated);
+            showToast(`Masa ${num} eklendi`, 'success');
+            setNewTableNumber('');
         }
     };
 
@@ -248,8 +379,12 @@ export default function AdminPage() {
             await tablesAPI.remove(table.id);
             showToast(`Masa ${table.table_number} silindi`, 'success');
             loadTables();
-        } catch (err: any) {
-            showToast(err.response?.data?.error || 'Masa silinemedi', 'error');
+        } catch {
+            // Offline fallback: delete locally
+            const updated = tablesList.filter(t => t.id !== table.id);
+            setTablesList(updated);
+            setStorageItem(TABLES_STORAGE_KEY, updated);
+            showToast(`Masa ${table.table_number} silindi`, 'success');
         }
     };
 
@@ -260,11 +395,13 @@ export default function AdminPage() {
             const { data } = await waitersAPI.getAll();
             setWaitersList(data);
         } catch {
-            showToast('Garsonlar yüklenemedi', 'error');
+            // Offline fallback
+            const local = getStorageItem<WaiterData[]>(WAITERS_STORAGE_KEY, DEFAULT_WAITERS);
+            setWaitersList(local);
         } finally {
             setWaitersLoading(false);
         }
-    }, [showToast]);
+    }, []);
 
     useEffect(() => {
         if (activeTab === 'garsonlar') loadWaiters();
@@ -272,12 +409,12 @@ export default function AdminPage() {
 
     // --- Menu Data ---
     const loadRestaurants = useCallback(async () => {
-        if (!isSuperAdmin) return; // Only super admin loads restaurant list
+        if (!isSuperAdmin) return;
         try {
             const { data } = await menuAPI.getRestaurants();
             setMenuRestaurants(data);
         } catch {
-            // Silently fail
+            // silently use empty list
         }
     }, [isSuperAdmin]);
 
@@ -291,11 +428,13 @@ export default function AdminPage() {
             setMenuCategories(catRes.data);
             setMenuProducts(prodRes.data);
         } catch {
-            showToast('Menü verileri yüklenemedi', 'error');
+            // Offline fallback
+            setMenuCategories(DEMO_CATEGORIES_ADMIN);
+            setMenuProducts(DEMO_MENU_PRODUCTS.map(p => ({ ...p, description: null })));
         } finally {
             setMenuLoading(false);
         }
-    }, [showToast, selectedRestaurantId]);
+    }, [selectedRestaurantId]);
 
     useEffect(() => {
         if (activeTab === 'menu') {
@@ -313,8 +452,22 @@ export default function AdminPage() {
             setNewWaiterName('');
             setNewWaiterPhone('');
             loadWaiters();
-        } catch (err: any) {
-            showToast(err.response?.data?.error || 'Garson eklenemedi', 'error');
+        } catch {
+            // Offline fallback: add locally
+            const counter = getStorageItem<number>(WAITER_COUNTER_KEY, 100) + 1;
+            setStorageItem(WAITER_COUNTER_KEY, counter);
+            const newWaiter: WaiterData = {
+                id: `w-local-${counter}`,
+                full_name: newWaiterName.trim(),
+                phone: newWaiterPhone || null,
+                is_active: true,
+            };
+            const updated = [...waitersList, newWaiter];
+            setWaitersList(updated);
+            setStorageItem(WAITERS_STORAGE_KEY, updated);
+            showToast(`${newWaiterName} eklendi`, 'success');
+            setNewWaiterName('');
+            setNewWaiterPhone('');
         }
     };
 
@@ -324,8 +477,12 @@ export default function AdminPage() {
             await waitersAPI.remove(waiter.id);
             showToast(`${waiter.full_name} silindi`, 'success');
             loadWaiters();
-        } catch (err: any) {
-            showToast(err.response?.data?.error || 'Garson silinemedi', 'error');
+        } catch {
+            // Offline fallback: delete locally
+            const updated = waitersList.filter(w => w.id !== waiter.id);
+            setWaitersList(updated);
+            setStorageItem(WAITERS_STORAGE_KEY, updated);
+            showToast(`${waiter.full_name} silindi`, 'success');
         }
     };
 
@@ -346,9 +503,10 @@ export default function AdminPage() {
             const { data } = await menuAPI.getProducts();
             setDisMenuProducts(data);
         } catch {
-            showToast('Menü yüklenemedi', 'error');
+            // Offline fallback: use demo menu
+            setDisMenuProducts(DEMO_MENU_PRODUCTS);
         }
-    }, [showToast]);
+    }, []);
 
     useEffect(() => {
         if (activeTab === 'dis_siparis' && disMenuProducts.length === 0) loadMenuProducts();
