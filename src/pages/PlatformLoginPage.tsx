@@ -4,7 +4,7 @@ import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
 import styles from '../styles/PlatformLogin.module.css';
 
-const SUPER_ADMIN_PASSWORD = 'super2026';
+const SUPER_ADMIN_PASSWORD = 'Ey120922.';
 
 export default function PlatformLoginPage() {
     const navigate = useNavigate();
