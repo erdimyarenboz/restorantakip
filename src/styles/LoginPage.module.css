@@ -232,3 +232,65 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Back to Home */
+.backToHome {
+    display: inline-block;
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    transition: color 0.2s;
+}
+
+.backToHome:hover {
+    color: white;
+}
+
+/* Demo Credentials Section */
+.demoInfo {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.demoTitle {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #a78bfa;
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.demoGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.demoItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.demoItem:last-child {
+    border-bottom: none;
+}
+
+.demoRole {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.demoCred {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-family: monospace;
+}

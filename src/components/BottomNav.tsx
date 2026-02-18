@@ -13,7 +13,7 @@ export default function BottomNav() {
     return (
         <nav className={styles.nav}>
             <NavLink
-                to="/"
+                to="/menu"
                 className={({ isActive }) => `${styles.link} ${isActive ? styles.active : ''}`}
             >
                 <span className={styles.icon}>🏠</span>

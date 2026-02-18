@@ -23,7 +23,7 @@ export default function OrdersPage() {
                     title={t('noOrdersYet')}
                     message={t('noOrdersMsg')}
                     actionLabel={t('startShopping')}
-                    onAction={() => navigate('/')}
+                    onAction={() => navigate('/menu')}
                 />
             </div>
         );

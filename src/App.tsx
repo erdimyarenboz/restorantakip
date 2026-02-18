@@ -9,6 +9,7 @@ import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import ToastContainer from './components/ToastContainer';
 import OrderStatusNotifier from './components/OrderStatusNotifier';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
 import CartPage from './pages/CartPage';
@@ -42,7 +43,7 @@ function ProtectedRoute({
   if (allowedRoles && effectiveRole && !allowedRoles.includes(effectiveRole)) {
     // Redirect to appropriate home based on role
     const homeMap: Record<string, string> = { admin: '/kitchen', waiter: '/waiter', kitchen: '/kitchen' };
-    return <Navigate to={homeMap[effectiveRole] || '/'} replace />;
+    return <Navigate to={homeMap[effectiveRole] || '/menu'} replace />;
   }
 
   return children;
@@ -60,21 +61,33 @@ function AppRoutes() {
       <OrderStatusNotifier />
       <main className="main-content">
         <Routes>
+          {/* Public landing page */}
+          <Route
+            path="/"
+            element={
+              isAuthenticated ? (
+                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/menu')} replace />
+              ) : (
+                <LandingPage />
+              )
+            }
+          />
+
           {/* Login route */}
           <Route
             path="/login"
             element={
               isAuthenticated ? (
-                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/')} replace />
+                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/menu')} replace />
               ) : (
                 <LoginPage />
               )
             }
           />
 
-          {/* Platform admin login — separate hidden URL */}
+          {/* Platform admin login — hidden URL */}
           <Route
-            path="/platform"
+            path="/giris-yonetim-x"
             element={
               isAuthenticated && role === 'super_admin' ? (
                 <Navigate to="/platform/dashboard" replace />
@@ -84,9 +97,15 @@ function AppRoutes() {
             }
           />
 
-          {/* Customer routes - only accessible by customers */}
+          {/* Legacy /platform route — redirect to new URL */}
           <Route
-            path="/"
+            path="/platform"
+            element={<Navigate to="/giris-yonetim-x" replace />}
+          />
+
+          {/* Customer routes - accessible by customers */}
+          <Route
+            path="/menu"
             element={
               <ProtectedRoute allowedRoles={['customer']}>
                 <ProductsPage />
@@ -167,7 +186,7 @@ function AppRoutes() {
             path="*"
             element={
               <Navigate
-                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/')) : '/login'}
+                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/menu')) : '/'}
                 replace
               />
             }

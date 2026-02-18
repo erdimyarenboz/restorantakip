@@ -20,7 +20,7 @@ export default function CartPage() {
                     title={t('emptyCart')}
                     message={t('emptyCartMsg')}
                     actionLabel={t('goToMenu')}
-                    onAction={() => navigate('/')}
+                    onAction={() => navigate('/menu')}
                 />
             </div>
         );
