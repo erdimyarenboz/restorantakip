@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOrders } from '../store/OrdersContext';
 import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
+import { useMenu } from '../store/MenuContext';
 import { useLanguage } from '../i18n/i18n';
 import { formatCurrency, formatDate } from '../utils/format';
 import { tablesAPI, waitersAPI, reportAPI, menuAPI } from '../services/api';
@@ -64,7 +65,7 @@ const DEFAULT_WAITERS: WaiterData[] = [
     { id: 'w-3', full_name: 'Ayşe Kaya', phone: '0534 777 88 99', is_active: true },
 ];
 
-type AdminTab = 'kasa' | 'raporlar' | 'masalar' | 'garsonlar' | 'dis_siparis' | 'menu';
+type AdminTab = 'dashboard' | 'kasa' | 'raporlar' | 'masalar' | 'garsonlar' | 'dis_siparis' | 'menu';
 
 interface RestaurantData {
     id: string;
@@ -125,11 +126,12 @@ export default function AdminPage() {
     const { getTablePaymentSummary, updateOrderStatus, clearPaidOrders, orders, createThirdPartyOrder } = useOrders();
     const { role } = useAuth();
     const { showToast } = useToast();
+    const { refreshMenu } = useMenu();
     const { t } = useLanguage();
     const isSuperAdmin = role === 'super_admin';
 
     // Tab state
-    const [activeTab, setActiveTab] = useState<AdminTab>('kasa');
+    const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
 
     // Custom confirm dialog (replaces window.confirm which closes too fast)
     const [confirmDialog, setConfirmDialog] = useState<{ message: string; onConfirm: () => void } | null>(null);
@@ -404,7 +406,7 @@ export default function AdminPage() {
     }, []);
 
     useEffect(() => {
-        if (activeTab === 'masalar') loadTables();
+        if (activeTab === 'masalar' || activeTab === 'dashboard') loadTables();
     }, [activeTab, loadTables]);
 
     const handleAddTable = async (e: React.FormEvent) => {
@@ -630,6 +632,9 @@ export default function AdminPage() {
 
             {/* Tab Navigation */}
             < div className={styles.tabNav} >
+                <button className={`${styles.tabBtn} ${activeTab === 'dashboard' ? styles.tabActive : ''}`} onClick={() => setActiveTab('dashboard')}>
+                    📊 Anlık Durum
+                </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'kasa' ? styles.tabActive : ''}`} onClick={() => setActiveTab('kasa')}>
                     {t('adminCashier')}
                 </button>
@@ -649,6 +654,107 @@ export default function AdminPage() {
                     {t('adminMenu')}
                 </button>
             </div >
+
+            {/* ======================== DASHBOARD TAB ======================== */}
+            {activeTab === 'dashboard' && (() => {
+                // Compute dashboard stats from orders & tablesList
+                const allTableNumbers = tablesList.map(t => t.table_number).sort((a, b) => a - b);
+                const occupiedTables = new Set<number>();
+                const tablesWithPendingPayment = new Set<number>();
+                const tableGuestCount: Record<number, number> = {};
+                const tableOpenAmount: Record<number, number> = {};
+
+                // Analyze all active orders
+                orders.forEach(order => {
+                    const tNum = order.table.tableNumber;
+                    if (tNum === 0) return; // skip third-party orders
+
+                    if (order.status !== 'Ödendi' && order.status !== 'İptal' && order.status !== 'Kuryeye Teslim Edildi') {
+                        occupiedTables.add(tNum);
+                        tableOpenAmount[tNum] = (tableOpenAmount[tNum] || 0) + order.totals.total;
+                        tableGuestCount[tNum] = (tableGuestCount[tNum] || 0) + (order.items?.length || 1);
+                    }
+                    if (order.status === 'Hazır' || order.status === 'Teslim Edildi') {
+                        tablesWithPendingPayment.add(tNum);
+                    }
+                });
+
+                const totalTables = allTableNumbers.length || 12;
+                const occupiedCount = occupiedTables.size;
+                const emptyCount = totalTables - occupiedCount;
+                const occupancyRate = totalTables > 0 ? Math.round((occupiedCount / totalTables) * 100) : 0;
+                const totalOpenBill = Object.values(tableOpenAmount).reduce((s, v) => s + v, 0);
+                const pendingPaymentCount = tablesWithPendingPayment.size;
+
+                // Generate table cards (use tablesList if loaded, otherwise generate 1-12)
+                const displayTables = allTableNumbers.length > 0 ? allTableNumbers : Array.from({ length: 12 }, (_, i) => i + 1);
+
+                return (
+                    <>
+                        <h1 className={styles.title} style={{ marginBottom: 16 }}>📊 Anlık Kontrol Paneli</h1>
+
+                        {/* Table Grid */}
+                        <div className={styles.dashGrid}>
+                            {displayTables.map(tNum => {
+                                const isOccupied = occupiedTables.has(tNum);
+                                const isPendingPayment = tablesWithPendingPayment.has(tNum);
+                                const guests = tableGuestCount[tNum] || 0;
+                                const amount = tableOpenAmount[tNum] || 0;
+
+                                let statusClass = styles.dashTableEmpty;
+                                if (isPendingPayment) statusClass = styles.dashTablePending;
+                                else if (isOccupied) statusClass = styles.dashTableOccupied;
+
+                                return (
+                                    <div key={tNum} className={`${styles.dashTableCard} ${statusClass}`}>
+                                        {isPendingPayment && <span className={styles.dashPaymentBadge}>💰</span>}
+                                        <div className={styles.dashTableNumber}>{tNum}</div>
+                                        {isOccupied && (
+                                            <>
+                                                <div className={styles.dashTableGuests}>{guests} kişi</div>
+                                                <div className={styles.dashTableAmount}>₺{amount.toLocaleString('tr-TR')}</div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Summary Stats */}
+                        <div className={styles.dashStats}>
+                            <div className={`${styles.dashStatCard} ${styles.dashStatOccupancy}`}>
+                                <div className={styles.dashStatValue}>%{occupancyRate}</div>
+                                <div className={styles.dashStatLabel}>Doluluk Oranı</div>
+                            </div>
+                            <div className={`${styles.dashStatCard} ${styles.dashStatBill}`}>
+                                <div className={styles.dashStatValue}>₺{totalOpenBill.toLocaleString('tr-TR')}</div>
+                                <div className={styles.dashStatLabel}>Açık Adisyon</div>
+                            </div>
+                            <div className={`${styles.dashStatCard} ${styles.dashStatEmpty}`}>
+                                <div className={styles.dashStatValue}>{emptyCount}</div>
+                                <div className={styles.dashStatLabel}>Boş Masa</div>
+                            </div>
+                            <div className={`${styles.dashStatCard} ${styles.dashStatPending}`}>
+                                <div className={styles.dashStatValue}>{pendingPaymentCount}</div>
+                                <div className={styles.dashStatLabel}>Ödeme Bekliyor</div>
+                            </div>
+                        </div>
+
+                        {/* Legend */}
+                        <div className={styles.dashLegend}>
+                            <span className={styles.dashLegendItem}>
+                                <span className={`${styles.dashLegendDot} ${styles.dashDotEmpty}`} /> Boş
+                            </span>
+                            <span className={styles.dashLegendItem}>
+                                <span className={`${styles.dashLegendDot} ${styles.dashDotOccupied}`} /> Dolu
+                            </span>
+                            <span className={styles.dashLegendItem}>
+                                <span className={`${styles.dashLegendDot} ${styles.dashDotPending}`} /> Ödeme Bekliyor
+                            </span>
+                        </div>
+                    </>
+                );
+            })()}
 
             {/* ======================== KASA TAB ======================== */}
             {
@@ -1135,6 +1241,7 @@ export default function AdminPage() {
                                                         const logoUrl = uploadRes.data.url;
                                                         await menuAPI.updateRestaurant(selectedRestaurantId, { logo_url: logoUrl });
                                                         setMenuRestaurants(prev => prev.map(r => r.id === selectedRestaurantId ? { ...r, logo_url: logoUrl } : r));
+                                                        await refreshMenu();
                                                         showToast('Logo güncellendi!', 'success');
                                                     };
                                                     reader.readAsDataURL(file);

@@ -1574,3 +1574,236 @@
         flex-wrap: wrap;
     }
 }
+
+/* ================== DASHBOARD ================== */
+
+/* Table grid */
+.dashGrid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.dashTableCard {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    cursor: default;
+    min-height: 100px;
+}
+
+.dashTableCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Status colors */
+.dashTableEmpty {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.dashTableOccupied {
+    background: #fce7f3;
+    border-color: #f9a8d4;
+}
+
+.dashTablePending {
+    background: #fef9c3;
+    border-color: #fde047;
+}
+
+.dashTableNumber {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.dashTableEmpty .dashTableNumber {
+    color: #16a34a;
+}
+
+.dashTableOccupied .dashTableNumber {
+    color: #e11d48;
+}
+
+.dashTablePending .dashTableNumber {
+    color: #d97706;
+}
+
+.dashTableGuests {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.dashTableAmount {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #059669;
+    margin-top: 2px;
+}
+
+.dashPaymentBadge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 1rem;
+    animation: dashPulse 2s infinite;
+}
+
+@keyframes dashPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.15);
+    }
+}
+
+/* Summary stat cards */
+.dashStats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashStatCard {
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.dashStatValue {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.dashStatLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 4px;
+    color: #374151;
+}
+
+.dashStatOccupancy {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+}
+
+.dashStatOccupancy .dashStatValue {
+    color: #7c3aed;
+}
+
+.dashStatBill {
+    background: #dbeafe;
+    border-color: #93c5fd;
+}
+
+.dashStatBill .dashStatValue {
+    color: #2563eb;
+}
+
+.dashStatEmpty {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.dashStatEmpty .dashStatValue {
+    color: #16a34a;
+}
+
+.dashStatPending {
+    background: #fef3c7;
+    border-color: #fcd34d;
+}
+
+.dashStatPending .dashStatValue {
+    color: #d97706;
+}
+
+/* Legend */
+.dashLegend {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-md) 0;
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.dashLegendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dashLegendDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dashDotEmpty {
+    background: #22c55e;
+}
+
+.dashDotOccupied {
+    background: #f43f5e;
+}
+
+.dashDotPending {
+    background: #f59e0b;
+}
+
+/* Dashboard responsive */
+@media (max-width: 900px) {
+    .dashGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .dashStats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .dashGrid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-sm);
+    }
+
+    .dashTableCard {
+        min-height: 80px;
+    }
+
+    .dashTableNumber {
+        font-size: 1.3rem;
+    }
+
+    .dashStatValue {
+        font-size: 1.5rem;
+    }
+
+    .dashStats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-sm);
+    }
+}
