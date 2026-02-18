@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../store/CartContext';
 import { useOrders } from '../store/OrdersContext';
 import { useToast } from '../store/ToastContext';
+import { tablesAPI } from '../services/api';
 import CartSummary from '../components/CartSummary';
 import type { TableOrder } from '../types';
 import styles from '../styles/CheckoutPage.module.css';
+
+interface TableItem {
+    id: string;
+    table_number: number;
+    is_active: boolean;
+}
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
@@ -14,13 +21,43 @@ export default function CheckoutPage() {
     const { createOrder } = useOrders();
     const { showToast } = useToast();
 
+    const [tables, setTables] = useState<TableItem[]>([]);
+    const [tablesLoading, setTablesLoading] = useState(true);
+
     const [formData, setFormData] = useState<TableOrder>({
         tableNumber: 1,
-        waiterName: 'Garson', // Default value, not editable by customer
+        waiterName: 'Garson',
         note: '',
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Fetch tables from API
+    useEffect(() => {
+        const loadTables = async () => {
+            try {
+                const { data } = await tablesAPI.getAll();
+                const activeTables = (data as TableItem[])
+                    .filter(t => t.is_active)
+                    .sort((a, b) => a.table_number - b.table_number);
+                setTables(activeTables);
+                if (activeTables.length > 0) {
+                    setFormData(prev => ({ ...prev, tableNumber: activeTables[0].table_number }));
+                }
+            } catch {
+                // Fallback: 10 tables if API unavailable
+                const fallback = Array.from({ length: 10 }, (_, i) => ({
+                    id: `fallback-${i + 1}`,
+                    table_number: i + 1,
+                    is_active: true,
+                }));
+                setTables(fallback);
+            } finally {
+                setTablesLoading(false);
+            }
+        };
+        loadTables();
+    }, []);
 
     // Redirect if cart is empty
     if (items.length === 0) {
@@ -34,13 +71,9 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
 
         try {
-            // Create order via backend API
             const order = await createOrder(formData, items, { subtotal, total });
             clearCart();
-
-            // Show success notification
             showToast('✅ Siparişiniz alındı, hazırlanma aşamasında!', 'success');
-
             navigate(`/orders/${order.orderId}`);
         } catch (error) {
             console.error('Order creation failed:', error);
@@ -61,21 +94,27 @@ export default function CheckoutPage() {
                     <label htmlFor="tableNumber" className={styles.label}>
                         Masa Numarası *
                     </label>
-                    <select
-                        id="tableNumber"
-                        value={formData.tableNumber}
-                        onChange={(e) =>
-                            setFormData({ ...formData, tableNumber: Number(e.target.value) })
-                        }
-                        className={styles.select}
-                        disabled={isSubmitting}
-                    >
-                        {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                            <option key={num} value={num}>
-                                Masa {num}
-                            </option>
-                        ))}
-                    </select>
+                    {tablesLoading ? (
+                        <div style={{ padding: '0.5rem', color: 'var(--color-text-secondary)' }}>⏳ Masalar yükleniyor...</div>
+                    ) : tables.length === 0 ? (
+                        <div style={{ padding: '0.5rem', color: '#EF4444' }}>Henüz masa tanımlanmamış. Lütfen yöneticiye başvurun.</div>
+                    ) : (
+                        <select
+                            id="tableNumber"
+                            value={formData.tableNumber}
+                            onChange={(e) =>
+                                setFormData({ ...formData, tableNumber: Number(e.target.value) })
+                            }
+                            className={styles.select}
+                            disabled={isSubmitting}
+                        >
+                            {tables.map((t) => (
+                                <option key={t.id} value={t.table_number}>
+                                    Masa {t.table_number}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
 
                 <div className={styles.field}>
@@ -97,9 +136,10 @@ export default function CheckoutPage() {
                     subtotal={subtotal}
                     total={total}
                     checkoutLabel={isSubmitting ? 'İşleniyor...' : 'Sipariş Oluştur'}
-                    checkoutDisabled={isSubmitting}
+                    checkoutDisabled={isSubmitting || tables.length === 0}
                 />
             </form>
         </div>
     );
 }
+

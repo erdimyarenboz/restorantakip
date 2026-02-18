@@ -33,8 +33,14 @@
     background-color: rgba(16, 185, 129, 0.08);
 }
 
+.logoutLink {
+    color: #f87171 !important;
+    background: rgba(239, 68, 68, 0.08);
+}
+
 .logoutLink:hover {
-    color: #EF4444;
+    color: #EF4444 !important;
+    background: rgba(239, 68, 68, 0.15) !important;
 }
 
 .icon {

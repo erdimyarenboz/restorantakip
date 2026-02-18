@@ -77,6 +77,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
             const backendCategories = categoriesRes.data;
             const backendProducts = productsRes.data;
 
+            console.log(`[MenuContext] API loaded: ${backendCategories.length} categories, ${backendProducts.length} products`);
+
             const transformedCategories: Category[] = backendCategories.map((cat: any) => ({
                 id: cat.id,
                 name: cat.name,
@@ -92,10 +94,11 @@ export function MenuProvider({ children }: { children: ReactNode }) {
                 image: product.image_url || '',
             }));
 
+            // Always use API data — even if empty (admin may not have added products yet)
             setCategories(transformedCategories);
             setMenuItems(transformedItems);
         } catch (err: any) {
-            console.warn('API unavailable, using demo menu data.');
+            console.warn('[MenuContext] API unavailable, using demo menu data.', err?.message || err);
             // Fallback to demo data so the app works without a backend
             setCategories(DEMO_CATEGORIES);
             setMenuItems(DEMO_ITEMS);

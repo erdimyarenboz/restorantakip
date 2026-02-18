@@ -63,7 +63,7 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
                                 💰 Kasa
                             </NavLink>
                             <button onClick={logout} className={styles.logoutButton}>
-                                Çıkış
+                                🚪 Çıkış
                             </button>
                         </nav>
                     )}

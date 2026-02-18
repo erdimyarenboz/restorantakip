@@ -67,9 +67,10 @@ export const menuAPI = {
     createCategory: (data: { name: string; icon?: string; sort_order?: number; restaurant_id?: string }) => api.post('/menu/categories', data),
     updateCategory: (id: string, data: { name?: string; icon?: string; sort_order?: number }) => api.patch(`/menu/categories/${id}`, data),
     deleteCategory: (id: string) => api.delete(`/menu/categories/${id}`),
-    createProduct: (data: { name: string; price: number; category_id: string; description?: string; restaurant_id?: string }) => api.post('/menu/products', data),
-    updateProduct: (id: string, data: { name?: string; price?: number; category_id?: string; description?: string; is_available?: boolean }) => api.patch(`/menu/products/${id}`, data),
+    createProduct: (data: { name: string; price: number; category_id: string; description?: string; restaurant_id?: string; image_url?: string }) => api.post('/menu/products', data),
+    updateProduct: (id: string, data: { name?: string; price?: number; category_id?: string; description?: string; is_available?: boolean; image_url?: string }) => api.patch(`/menu/products/${id}`, data),
     deleteProduct: (id: string) => api.delete(`/menu/products/${id}`),
+    uploadImage: (image: string, fileName?: string) => api.post('/menu/upload-image', { image, fileName }),
 };
 
 export const tablesAPI = {

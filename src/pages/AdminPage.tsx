@@ -87,6 +87,7 @@ interface ProductData {
     description: string | null;
     category_id: string;
     is_available: boolean;
+    image_url?: string | null;
     category?: CategoryData;
 }
 
@@ -179,6 +180,55 @@ export default function AdminPage() {
     const [newProdDesc, setNewProdDesc] = useState('');
     const [newProdCatId, setNewProdCatId] = useState('');
     const [editingProduct, setEditingProduct] = useState<ProductData | null>(null);
+
+    // Image upload states
+    const [newProdImageFile, setNewProdImageFile] = useState<File | null>(null);
+    const [newProdImagePreview, setNewProdImagePreview] = useState<string>('');
+    const [editProdImageFile, setEditProdImageFile] = useState<File | null>(null);
+    const [editProdImagePreview, setEditProdImagePreview] = useState<string>('');
+    const [imageUploading, setImageUploading] = useState(false);
+
+    // Image upload helper
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    const handleImageSelect = (file: File | null, mode: 'add' | 'edit') => {
+        if (!file) {
+            if (mode === 'add') { setNewProdImageFile(null); setNewProdImagePreview(''); }
+            else { setEditProdImageFile(null); setEditProdImagePreview(''); }
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE) {
+            showToast('Görsel boyutu max 5MB olmalı', 'error');
+            return;
+        }
+        if (mode === 'add') { setNewProdImageFile(file); } else { setEditProdImageFile(file); }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const result = e.target?.result as string;
+            if (mode === 'add') setNewProdImagePreview(result);
+            else setEditProdImagePreview(result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const uploadImageFile = async (file: File): Promise<string | null> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target?.result as string;
+                try {
+                    const { data } = await menuAPI.uploadImage(base64, `${Date.now()}-${file.name}`);
+                    resolve(data.url);
+                } catch (err: any) {
+                    const msg = err?.response?.data?.error || 'Görsel yüklenemedi';
+                    console.error('Image upload failed:', msg);
+                    showToast(msg, 'error');
+                    resolve(null);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
 
     // --- Kasa Logic ---
     const tableSummary = getTablePaymentSummary();
@@ -1124,11 +1174,17 @@ export default function AdminPage() {
                                     e.preventDefault();
                                     if (!newProdName.trim() || !newProdPrice || !newProdCatId) return;
                                     try {
-                                        await menuAPI.createProduct({ name: newProdName.trim(), price: Number(newProdPrice), category_id: newProdCatId, description: newProdDesc.trim() || undefined, restaurant_id: selectedRestaurantId });
+                                        setImageUploading(true);
+                                        let imageUrl: string | undefined;
+                                        if (newProdImageFile) {
+                                            const url = await uploadImageFile(newProdImageFile);
+                                            if (url) imageUrl = url;
+                                        }
+                                        await menuAPI.createProduct({ name: newProdName.trim(), price: Number(newProdPrice), category_id: newProdCatId, description: newProdDesc.trim() || undefined, restaurant_id: selectedRestaurantId, image_url: imageUrl });
                                         showToast('Ürün eklendi!', 'success');
-                                        setNewProdName(''); setNewProdPrice(''); setNewProdDesc(''); setShowAddProduct(false);
+                                        setNewProdName(''); setNewProdPrice(''); setNewProdDesc(''); setNewProdImageFile(null); setNewProdImagePreview(''); setShowAddProduct(false);
                                         loadMenuData();
-                                    } catch { showToast('Ürün eklenemedi', 'error'); }
+                                    } catch { showToast('Ürün eklenemedi', 'error'); } finally { setImageUploading(false); }
                                 }}>
                                     <div className={styles.menuFormGrid}>
                                         <input className={styles.menuInput} value={newProdName} onChange={(e) => setNewProdName(e.target.value)} placeholder="Ürün adı" required />
@@ -1139,7 +1195,22 @@ export default function AdminPage() {
                                         </select>
                                         <input className={styles.menuInput} value={newProdDesc} onChange={(e) => setNewProdDesc(e.target.value)} placeholder="Açıklama (opsiyonel)" />
                                     </div>
-                                    <button type="submit" className={styles.menuSaveBtn} style={{ marginTop: '0.5rem' }}>Ürün Ekle</button>
+                                    {/* Image Upload */}
+                                    <div className={styles.imageUploadArea}>
+                                        <label className={styles.imageUploadLabel}>
+                                            📷 Görsel Seç
+                                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleImageSelect(e.target.files?.[0] || null, 'add')} />
+                                        </label>
+                                        {newProdImagePreview && (
+                                            <div className={styles.imagePreviewWrap}>
+                                                <img src={newProdImagePreview} alt="Önizleme" className={styles.imagePreview} />
+                                                <button type="button" className={styles.imageRemoveBtn} onClick={() => handleImageSelect(null, 'add')}>✕</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button type="submit" className={styles.menuSaveBtn} style={{ marginTop: '0.5rem' }} disabled={imageUploading}>
+                                        {imageUploading ? '⏳ Yükleniyor...' : 'Ürün Ekle'}
+                                    </button>
                                 </form>
                             )}
 
@@ -1147,16 +1218,23 @@ export default function AdminPage() {
                                 <form className={styles.menuForm} onSubmit={async (e) => {
                                     e.preventDefault();
                                     try {
+                                        setImageUploading(true);
+                                        let imageUrl: string | undefined;
+                                        if (editProdImageFile) {
+                                            const url = await uploadImageFile(editProdImageFile);
+                                            if (url) imageUrl = url;
+                                        }
                                         await menuAPI.updateProduct(editingProduct.id, {
                                             name: editingProduct.name,
                                             price: editingProduct.price,
                                             category_id: editingProduct.category_id,
                                             description: editingProduct.description || undefined,
+                                            ...(imageUrl ? { image_url: imageUrl } : {}),
                                         });
                                         showToast('Ürün güncellendi!', 'success');
-                                        setEditingProduct(null);
+                                        setEditingProduct(null); setEditProdImageFile(null); setEditProdImagePreview('');
                                         loadMenuData();
-                                    } catch { showToast('Güncellenemedi', 'error'); }
+                                    } catch { showToast('Güncellenemedi', 'error'); } finally { setImageUploading(false); }
                                 }}>
                                     <div className={styles.menuFormGrid}>
                                         <input className={styles.menuInput} value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} required />
@@ -1166,9 +1244,24 @@ export default function AdminPage() {
                                         </select>
                                         <input className={styles.menuInput} value={editingProduct.description || ''} onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })} placeholder="Açıklama" />
                                     </div>
+                                    {/* Image Upload for Edit */}
+                                    <div className={styles.imageUploadArea}>
+                                        <label className={styles.imageUploadLabel}>
+                                            📷 {editingProduct.image_url ? 'Görseli Değiştir' : 'Görsel Ekle'}
+                                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => handleImageSelect(e.target.files?.[0] || null, 'edit')} />
+                                        </label>
+                                        {(editProdImagePreview || editingProduct.image_url) && (
+                                            <div className={styles.imagePreviewWrap}>
+                                                <img src={editProdImagePreview || editingProduct.image_url || ''} alt="Önizleme" className={styles.imagePreview} />
+                                                {editProdImagePreview && <button type="button" className={styles.imageRemoveBtn} onClick={() => handleImageSelect(null, 'edit')}>✕</button>}
+                                            </div>
+                                        )}
+                                    </div>
                                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                        <button type="submit" className={styles.menuSaveBtn}>Kaydet</button>
-                                        <button type="button" className={styles.menuCancelBtn} onClick={() => setEditingProduct(null)}>İptal</button>
+                                        <button type="submit" className={styles.menuSaveBtn} disabled={imageUploading}>
+                                            {imageUploading ? '⏳ Yükleniyor...' : 'Kaydet'}
+                                        </button>
+                                        <button type="button" className={styles.menuCancelBtn} onClick={() => { setEditingProduct(null); setEditProdImageFile(null); setEditProdImagePreview(''); }}>İptal</button>
                                     </div>
                                 </form>
                             )}
@@ -1176,6 +1269,11 @@ export default function AdminPage() {
                             <div className={styles.menuProductList}>
                                 {(menuSelectedCat === 'all' ? menuProducts : menuProducts.filter(p => p.category_id === menuSelectedCat)).map((prod) => (
                                     <div key={prod.id} className={`${styles.menuProductItem} ${!prod.is_available ? styles.menuProductUnavailable : ''}`}>
+                                        {prod.image_url ? (
+                                            <img src={prod.image_url} alt={prod.name} className={styles.menuProductThumb} />
+                                        ) : (
+                                            <div className={styles.menuProductThumbPlaceholder}>🍽️</div>
+                                        )}
                                         <div className={styles.menuProductInfo}>
                                             <span className={styles.menuProductName}>{prod.name}</span>
                                             {prod.description && <span className={styles.menuProductDesc}>{prod.description}</span>}

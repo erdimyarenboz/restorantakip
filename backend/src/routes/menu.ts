@@ -48,7 +48,18 @@ router.get('/restaurants/:slug', async (req: Request, res: Response) => {
 // Get categories (filtered by restaurant_id)
 router.get('/categories', async (req: Request, res: Response) => {
     try {
-        const restaurant_id = (req.query.restaurant_id as string) || 'rest-001';
+        let restaurant_id = req.query.restaurant_id as string;
+
+        if (!restaurant_id) {
+            const { data: firstRestaurant } = await supabase
+                .from('restaurants')
+                .select('id')
+                .eq('is_active', true)
+                .order('created_at', { ascending: true })
+                .limit(1)
+                .single();
+            restaurant_id = firstRestaurant?.id || 'rest-001';
+        }
 
         const { data, error } = await supabase
             .from('categories')
@@ -145,7 +156,18 @@ router.delete('/categories/:id', async (req: Request, res: Response) => {
 // Get products (customer view - only available, filtered by restaurant_id)
 router.get('/products', async (req: Request, res: Response) => {
     try {
-        const restaurant_id = (req.query.restaurant_id as string) || 'rest-001';
+        let restaurant_id = req.query.restaurant_id as string;
+
+        if (!restaurant_id) {
+            const { data: firstRestaurant } = await supabase
+                .from('restaurants')
+                .select('id')
+                .eq('is_active', true)
+                .order('created_at', { ascending: true })
+                .limit(1)
+                .single();
+            restaurant_id = firstRestaurant?.id || 'rest-001';
+        }
 
         const { data, error } = await supabase
             .from('products')
@@ -168,7 +190,18 @@ router.get('/products', async (req: Request, res: Response) => {
 // Get all products (admin view - includes unavailable, filtered by restaurant_id)
 router.get('/products/all', async (req: Request, res: Response) => {
     try {
-        const restaurant_id = (req.query.restaurant_id as string) || 'rest-001';
+        let restaurant_id = req.query.restaurant_id as string;
+
+        if (!restaurant_id) {
+            const { data: firstRestaurant } = await supabase
+                .from('restaurants')
+                .select('id')
+                .eq('is_active', true)
+                .order('created_at', { ascending: true })
+                .limit(1)
+                .single();
+            restaurant_id = firstRestaurant?.id || 'rest-001';
+        }
 
         const { data, error } = await supabase
             .from('products')
@@ -304,7 +337,10 @@ router.post('/upload-image', async (req: Request, res: Response) => {
                 upsert: true,
             });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Storage upload error:', error);
+            return res.status(500).json({ error: `Görsel yüklenemedi: ${error.message}` });
+        }
 
         // Get public URL
         const { data: publicUrlData } = supabase.storage
@@ -315,9 +351,9 @@ router.post('/upload-image', async (req: Request, res: Response) => {
             url: publicUrlData.publicUrl,
             path: filePath,
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Image upload error:', error);
-        res.status(500).json({ error: 'Görsel yüklenemedi' });
+        res.status(500).json({ error: `Görsel yüklenemedi: ${error?.message || 'Bilinmeyen hata'}` });
     }
 });
 
