@@ -174,7 +174,7 @@ export default function AdminPage() {
 
     // Menu management
     const [menuRestaurants, setMenuRestaurants] = useState<RestaurantData[]>([]);
-    const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('rest-001');
+    const [selectedRestaurantId, setSelectedRestaurantId] = useState<string>('');
     const [menuCategories, setMenuCategories] = useState<CategoryData[]>([]);
     const [menuProducts, setMenuProducts] = useState<ProductData[]>([]);
     const [menuLoading, setMenuLoading] = useState(false);
@@ -476,14 +476,17 @@ export default function AdminPage() {
 
     // --- Menu Data ---
     const loadRestaurants = useCallback(async () => {
-        if (!isSuperAdmin) return;
         try {
             const { data } = await menuAPI.getRestaurants();
             setMenuRestaurants(data);
+            // Auto-select the first restaurant if none selected yet
+            if (data && data.length > 0 && !selectedRestaurantId) {
+                setSelectedRestaurantId(data[0].id);
+            }
         } catch {
             // silently use empty list
         }
-    }, [isSuperAdmin]);
+    }, [selectedRestaurantId]);
 
     const loadMenuData = useCallback(async () => {
         setMenuLoading(true);
@@ -503,12 +506,16 @@ export default function AdminPage() {
         }
     }, [selectedRestaurantId]);
 
+    // Load restaurants on mount for all admin users (needed for logo upload)
+    useEffect(() => {
+        loadRestaurants();
+    }, [loadRestaurants]);
+
     useEffect(() => {
         if (activeTab === 'menu') {
-            loadRestaurants();
             loadMenuData();
         }
-    }, [activeTab, loadMenuData, loadRestaurants]);
+    }, [activeTab, loadMenuData]);
 
     const handleAddWaiter = async (e: React.FormEvent) => {
         e.preventDefault();
