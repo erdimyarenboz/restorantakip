@@ -5,7 +5,7 @@ import { useToast } from '../store/ToastContext';
 import { useMenu } from '../store/MenuContext';
 import { useLanguage } from '../i18n/i18n';
 import { formatCurrency, formatDate } from '../utils/format';
-import { tablesAPI, waitersAPI, reportAPI, menuAPI } from '../services/api';
+import { tablesAPI, waitersAPI, reportAPI, menuAPI, integrationsAPI } from '../services/api';
 import { getStorageItem, setStorageItem } from '../utils/storage';
 import type { OrderSource } from '../types';
 import styles from '../styles/AdminPage.module.css';
@@ -65,7 +65,29 @@ const DEFAULT_WAITERS: WaiterData[] = [
     { id: 'w-3', full_name: 'Ayşe Kaya', phone: '0534 777 88 99', is_active: true },
 ];
 
-type AdminTab = 'dashboard' | 'kasa' | 'raporlar' | 'masalar' | 'garsonlar' | 'dis_siparis' | 'menu';
+type AdminTab = 'dashboard' | 'kasa' | 'raporlar' | 'masalar' | 'garsonlar' | 'dis_siparis' | 'entegrasyonlar' | 'menu';
+
+interface PlatformIntegration {
+    id: string;
+    restaurant_id: string;
+    platform: string;
+    seller_id: string | null;
+    store_name: string | null;
+    store_link: string | null;
+    api_key: string | null;
+    api_secret: string | null;
+    token: string | null;
+    is_active: boolean;
+}
+
+const PLATFORM_INFO: Record<string, { name: string; color: string; emoji: string }> = {
+    trendyol_go: { name: 'Trendyol Go', color: '#F27A1A', emoji: '🟠' },
+    getir: { name: 'Getir', color: '#5D3EBC', emoji: '🟣' },
+    migros: { name: 'Migros Yemek', color: '#F58220', emoji: '🟠' },
+    yemeksepeti: { name: 'Yemek Sepeti', color: '#FA0050', emoji: '🔴' },
+};
+
+const ALL_PLATFORMS = ['trendyol_go', 'getir', 'migros', 'yemeksepeti'];
 
 interface RestaurantData {
     id: string;
@@ -193,6 +215,14 @@ export default function AdminPage() {
     const [newProdDesc, setNewProdDesc] = useState('');
     const [newProdCatId, setNewProdCatId] = useState('');
     const [editingProduct, setEditingProduct] = useState<ProductData | null>(null);
+
+    // Platform integrations
+    const [integrations, setIntegrations] = useState<PlatformIntegration[]>([]);
+    const [intLoading, setIntLoading] = useState(false);
+    const [editingIntegration, setEditingIntegration] = useState<string | null>(null); // platform slug being edited
+    const [intForm, setIntForm] = useState({ seller_id: '', store_name: '', store_link: '', api_key: '', api_secret: '', token: '' });
+    const [intTestResult, setIntTestResult] = useState<{ platform: string; success: boolean; message: string } | null>(null);
+    const [intSaving, setIntSaving] = useState(false);
 
     // Image upload states
     const [newProdImageFile, setNewProdImageFile] = useState<File | null>(null);
@@ -656,6 +686,9 @@ export default function AdminPage() {
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'dis_siparis' ? styles.tabActive : ''}`} onClick={() => setActiveTab('dis_siparis')}>
                     {t('adminThirdParty')}
+                </button>
+                <button className={`${styles.tabBtn} ${activeTab === 'entegrasyonlar' ? styles.tabActive : ''}`} onClick={() => setActiveTab('entegrasyonlar')}>
+                    🔗 Entegrasyonlar
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'menu' ? styles.tabActive : ''}`} onClick={() => setActiveTab('menu')}>
                     {t('adminMenu')}
@@ -1168,6 +1201,222 @@ export default function AdminPage() {
                     </div>
                 )
             }
+
+            {/* ======================== ENTEGRASYONLAR TAB ======================== */}
+            {activeTab === 'entegrasyonlar' && (() => {
+                // Load integrations when tab is active
+                const loadIntegrations = async () => {
+                    if (intLoading) return;
+                    setIntLoading(true);
+                    try {
+                        const { data } = await integrationsAPI.getAll(selectedRestaurantId || undefined);
+                        setIntegrations(data);
+                    } catch {
+                        setIntegrations([]);
+                    } finally {
+                        setIntLoading(false);
+                    }
+                };
+
+                const handleSave = async (platform: string) => {
+                    setIntSaving(true);
+                    try {
+                        const existing = integrations.find(i => i.platform === platform);
+                        if (existing) {
+                            const { data } = await integrationsAPI.update(existing.id, intForm);
+                            setIntegrations(prev => prev.map(i => i.id === existing.id ? data : i));
+                        } else {
+                            const { data } = await integrationsAPI.create({
+                                restaurant_id: selectedRestaurantId || 'rest-002',
+                                platform,
+                                ...intForm,
+                            });
+                            setIntegrations(prev => [...prev, data]);
+                        }
+                        showToast('Entegrasyon kaydedildi!', 'success');
+                        setEditingIntegration(null);
+                    } catch {
+                        showToast('Entegrasyon kaydedilemedi', 'error');
+                    } finally {
+                        setIntSaving(false);
+                    }
+                };
+
+                const handleDelete = async (id: string) => {
+                    if (!confirm('Bu entegrasyonu silmek istediğinize emin misiniz?')) return;
+                    try {
+                        await integrationsAPI.remove(id);
+                        setIntegrations(prev => prev.filter(i => i.id !== id));
+                        showToast('Entegrasyon silindi', 'success');
+                    } catch {
+                        showToast('Entegrasyon silinemedi', 'error');
+                    }
+                };
+
+                const handleTest = async (id: string, platform: string) => {
+                    try {
+                        const { data } = await integrationsAPI.test(id);
+                        setIntTestResult({ platform, success: data.success, message: data.message });
+                        showToast(data.message, data.success ? 'success' : 'error');
+                    } catch {
+                        setIntTestResult({ platform, success: false, message: 'Bağlantı testi başarısız' });
+                        showToast('Bağlantı testi başarısız', 'error');
+                    }
+                };
+
+                const handleToggle = async (id: string, currentState: boolean) => {
+                    try {
+                        const { data } = await integrationsAPI.update(id, { is_active: !currentState });
+                        setIntegrations(prev => prev.map(i => i.id === id ? data : i));
+                        showToast(!currentState ? 'Entegrasyon aktif edildi' : 'Entegrasyon pasif yapıldı', 'success');
+                    } catch {
+                        showToast('Durum değiştirilemedi', 'error');
+                    }
+                };
+
+                const openEdit = (platform: string) => {
+                    const existing = integrations.find(i => i.platform === platform);
+                    setIntForm({
+                        seller_id: existing?.seller_id || '',
+                        store_name: existing?.store_name || '',
+                        store_link: existing?.store_link || '',
+                        api_key: existing?.api_key || '',
+                        api_secret: existing?.api_secret || '',
+                        token: existing?.token || '',
+                    });
+                    setEditingIntegration(platform);
+                    setIntTestResult(null);
+                };
+
+                // Auto-load on first render
+                if (integrations.length === 0 && !intLoading) {
+                    loadIntegrations();
+                }
+
+                return (
+                    <>
+                        <h1 className={styles.title} style={{ marginBottom: 16 }}>🔗 Platform Entegrasyonları</h1>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: 24, fontSize: '0.9rem' }}>
+                            Trendyol Go, Getir, Migros Yemek ve Yemek Sepeti için API bilgilerinizi girerek gerçek zamanlı entegrasyon sağlayın.
+                        </p>
+
+                        {/* Platform Grid */}
+                        <div className={styles.intGrid}>
+                            {ALL_PLATFORMS.map(platform => {
+                                const info = PLATFORM_INFO[platform];
+                                const existing = integrations.find(i => i.platform === platform);
+                                const isEditing = editingIntegration === platform;
+
+                                return (
+                                    <div key={platform} className={styles.intCard} style={{ borderColor: existing ? info.color : 'var(--color-border)' }}>
+                                        {/* Card Header */}
+                                        <div className={styles.intCardHeader} style={{ background: `${info.color}15` }}>
+                                            <div className={styles.intCardTitle}>
+                                                <span style={{ fontSize: '1.5rem' }}>{info.emoji}</span>
+                                                <h3 style={{ color: info.color }}>{info.name}</h3>
+                                            </div>
+                                            {existing && (
+                                                <div className={styles.intStatusBadge} style={{ background: existing.is_active ? '#22c55e20' : '#ef444420', color: existing.is_active ? '#22c55e' : '#ef4444' }}>
+                                                    {existing.is_active ? '✅ Aktif' : '⏸️ Pasif'}
+                                                </div>
+                                            )}
+                                            {!existing && (
+                                                <div className={styles.intStatusBadge} style={{ background: '#64748b20', color: '#94a3b8' }}>
+                                                    Bağlı Değil
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Card Body */}
+                                        {!isEditing ? (
+                                            <div className={styles.intCardBody}>
+                                                {existing ? (
+                                                    <>
+                                                        <div className={styles.intFieldRow}>
+                                                            <span className={styles.intFieldLabel}>Satıcı ID:</span>
+                                                            <span className={styles.intFieldValue}>{existing.seller_id || '—'}</span>
+                                                        </div>
+                                                        <div className={styles.intFieldRow}>
+                                                            <span className={styles.intFieldLabel}>Mağaza:</span>
+                                                            <span className={styles.intFieldValue}>{existing.store_name || '—'}</span>
+                                                        </div>
+                                                        <div className={styles.intFieldRow}>
+                                                            <span className={styles.intFieldLabel}>API Key:</span>
+                                                            <span className={styles.intFieldValue}>{existing.api_key ? '••••••••' : '—'}</span>
+                                                        </div>
+                                                        <div className={styles.intCardActions}>
+                                                            <button className={styles.intBtnEdit} onClick={() => openEdit(platform)}>✏️ Düzenle</button>
+                                                            <button className={styles.intBtnTest} onClick={() => handleTest(existing.id, platform)}>🔌 Test</button>
+                                                            <button className={styles.intBtnToggle} onClick={() => handleToggle(existing.id, existing.is_active)} style={{ color: existing.is_active ? '#ef4444' : '#22c55e' }}>
+                                                                {existing.is_active ? '⏸️ Pasif' : '▶️ Aktif'}
+                                                            </button>
+                                                            <button className={styles.intBtnDelete} onClick={() => handleDelete(existing.id)}>🗑️</button>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                                        <p style={{ color: 'var(--color-text-muted)', marginBottom: 12 }}>Henüz bağlanmadı</p>
+                                                        <button className={styles.intBtnConnect} style={{ background: info.color }} onClick={() => openEdit(platform)}>
+                                                            ➕ Bağlan
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            /* Edit Form */
+                                            <div className={styles.intCardBody}>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>Satıcı ID</label>
+                                                    <input type="text" value={intForm.seller_id} onChange={e => setIntForm(f => ({ ...f, seller_id: e.target.value }))} placeholder="Satıcı/Vendor ID" />
+                                                </div>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>Mağaza Adı</label>
+                                                    <input type="text" value={intForm.store_name} onChange={e => setIntForm(f => ({ ...f, store_name: e.target.value }))} placeholder="Mağaza adınız" />
+                                                </div>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>Mağaza Linki</label>
+                                                    <input type="url" value={intForm.store_link} onChange={e => setIntForm(f => ({ ...f, store_link: e.target.value }))} placeholder="https://..." />
+                                                </div>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>API Key</label>
+                                                    <input type="text" value={intForm.api_key} onChange={e => setIntForm(f => ({ ...f, api_key: e.target.value }))} placeholder="API Key" />
+                                                </div>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>API Secret</label>
+                                                    <input type="password" value={intForm.api_secret} onChange={e => setIntForm(f => ({ ...f, api_secret: e.target.value }))} placeholder="API Secret" />
+                                                </div>
+                                                <div className={styles.intFormGroup}>
+                                                    <label>Token</label>
+                                                    <input type="password" value={intForm.token} onChange={e => setIntForm(f => ({ ...f, token: e.target.value }))} placeholder="Erişim Token" />
+                                                </div>
+                                                <div className={styles.intCardActions}>
+                                                    <button className={styles.intBtnSave} onClick={() => handleSave(platform)} disabled={intSaving}>
+                                                        {intSaving ? '⏳ Kaydediliyor...' : '💾 Kaydet'}
+                                                    </button>
+                                                    <button className={styles.intBtnCancel} onClick={() => setEditingIntegration(null)}>İptal</button>
+                                                </div>
+                                                {intTestResult && intTestResult.platform === platform && (
+                                                    <div className={styles.intTestResult} style={{ background: intTestResult.success ? '#22c55e15' : '#ef444415', color: intTestResult.success ? '#22c55e' : '#ef4444' }}>
+                                                        {intTestResult.success ? '✅' : '❌'} {intTestResult.message}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Info Note */}
+                        <div style={{ marginTop: 24, padding: '12px 16px', background: 'var(--color-surface-elevated)', borderRadius: 12, border: '1px solid var(--color-border)' }}>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                                💡 <strong>Not:</strong> Platform API bilgilerinizi girdikten sonra siparişler otomatik olarak sisteme düşecektir.
+                                Her platform için gerekli bilgilere ilgili platformun satıcı panelinden ulaşabilirsiniz.
+                            </p>
+                        </div>
+                    </>
+                );
+            })()}
 
             {/* ======================== MENÜ TAB ======================== */}
             {

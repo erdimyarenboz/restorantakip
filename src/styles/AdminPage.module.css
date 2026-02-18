@@ -1807,3 +1807,198 @@
         gap: var(--spacing-sm);
     }
 }
+
+/* =================== PLATFORM INTEGRATIONS =================== */
+
+.intGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.intCard {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.intCard:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.intCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.intCardTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.intCardTitle h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.intStatusBadge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.intCardBody {
+    padding: 16px 20px;
+}
+
+.intFieldRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.intFieldRow:last-of-type {
+    border-bottom: none;
+}
+
+.intFieldLabel {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.intFieldValue {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.intCardActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.intCardActions button {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.intCardActions button:hover {
+    background: var(--color-border);
+}
+
+.intBtnEdit {
+    color: var(--color-text);
+}
+
+.intBtnTest {
+    color: #3b82f6;
+}
+
+.intBtnToggle {
+    font-weight: 600;
+}
+
+.intBtnDelete {
+    color: #ef4444 !important;
+    margin-left: auto;
+}
+
+.intBtnConnect {
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.intBtnConnect:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+/* Integration Form */
+.intFormGroup {
+    margin-bottom: 12px;
+}
+
+.intFormGroup label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.intFormGroup input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.intFormGroup input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.intBtnSave {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border-color: var(--color-primary) !important;
+    font-weight: 700 !important;
+}
+
+.intBtnSave:hover {
+    opacity: 0.9;
+}
+
+.intBtnCancel {
+    color: var(--color-text-muted) !important;
+}
+
+.intTestResult {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Integration responsive */
+@media (max-width: 768px) {
+    .intGrid {
+        grid-template-columns: 1fr;
+    }
+}

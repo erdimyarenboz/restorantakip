@@ -105,3 +105,11 @@ export const crmAPI = {
     }) => api.post('/crm/restaurants', data),
     updateRestaurant: (id: string, data: Record<string, any>) => api.put(`/crm/restaurants/${id}`, data),
 };
+
+export const integrationsAPI = {
+    getAll: (restaurantId?: string) => api.get('/integrations', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
+    create: (data: { restaurant_id: string; platform: string; seller_id?: string; store_name?: string; store_link?: string; api_key?: string; api_secret?: string; token?: string }) => api.post('/integrations', data),
+    update: (id: string, data: Record<string, any>) => api.patch(`/integrations/${id}`, data),
+    remove: (id: string) => api.delete(`/integrations/${id}`),
+    test: (id: string) => api.post(`/integrations/${id}/test`),
+};
