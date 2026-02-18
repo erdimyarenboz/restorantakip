@@ -11,7 +11,7 @@ router.get('/restaurants', async (req: Request, res: Response) => {
     try {
         const { data, error } = await supabase
             .from('restaurants')
-            .select('id, name, slug, is_active, subscription_plan')
+            .select('id, name, slug, is_active, subscription_plan, logo_url')
             .order('name', { ascending: true });
 
         if (error) throw error;
@@ -40,6 +40,32 @@ router.get('/restaurants/:slug', async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Get restaurant by slug error:', error);
         res.status(500).json({ error: 'Restoran yüklenemedi' });
+    }
+});
+
+// Update restaurant (logo, name, etc.)
+router.patch('/restaurants/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { logo_url, name, phone, address } = req.body;
+        const updateData: Record<string, any> = {};
+        if (logo_url !== undefined) updateData.logo_url = logo_url;
+        if (name !== undefined) updateData.name = name;
+        if (phone !== undefined) updateData.phone = phone;
+        if (address !== undefined) updateData.address = address;
+
+        const { data, error } = await supabase
+            .from('restaurants')
+            .update(updateData)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error('Update restaurant error:', error);
+        res.status(500).json({ error: 'Restoran güncellenemedi' });
     }
 });
 

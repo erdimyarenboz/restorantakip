@@ -2,6 +2,7 @@
     max-width: var(--max-width);
     margin: 0 auto;
     padding: var(--spacing-lg) var(--spacing-md);
+    overflow-x: hidden;
 }
 
 /* ─── Loading ──────────────────────────────────────────────────────── */
@@ -309,7 +310,7 @@
 
     .productsGrid {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-md);
+        gap: var(--spacing-sm);
     }
 
     .breadcrumbs {

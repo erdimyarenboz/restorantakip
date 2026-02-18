@@ -28,6 +28,16 @@
     color: #10B981;
     white-space: nowrap;
     transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logoImage {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
 }
 
 .logo:hover {

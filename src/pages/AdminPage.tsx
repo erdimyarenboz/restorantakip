@@ -71,6 +71,7 @@ interface RestaurantData {
     slug: string;
     is_active: boolean;
     subscription_plan: string;
+    logo_url?: string | null;
 }
 
 interface CategoryData {
@@ -1099,6 +1100,60 @@ export default function AdminPage() {
                                     </select>
                                 </div>
                             )}
+
+                            {/* Logo Yükleme */}
+                            <div className={styles.menuMgmtBlock}>
+                                <div className={styles.menuBlockHeader}>
+                                    <h3>🖼️ Restoran Logosu</h3>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px 0', flexWrap: 'wrap' }}>
+                                    {(() => {
+                                        const currentRest = menuRestaurants.find(r => r.id === selectedRestaurantId);
+                                        return currentRest?.logo_url ? (
+                                            <img src={currentRest.logo_url} alt="Logo" style={{ width: 64, height: 64, borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--color-border)' }} />
+                                        ) : (
+                                            <div style={{ width: 64, height: 64, borderRadius: '12px', background: 'var(--color-surface-elevated)', border: '2px dashed var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>🍽️</div>
+                                        );
+                                    })()}
+                                    <div style={{ flex: 1, minWidth: 200 }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            id="logo-upload"
+                                            style={{ display: 'none' }}
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                try {
+                                                    showToast('Logo yükleniyor...', 'info');
+                                                    const reader = new FileReader();
+                                                    reader.onload = async () => {
+                                                        const base64 = reader.result as string;
+                                                        const uploadRes = await menuAPI.uploadImage(base64, `logo_${selectedRestaurantId}`);
+                                                        const logoUrl = uploadRes.data.url;
+                                                        await menuAPI.updateRestaurant(selectedRestaurantId, { logo_url: logoUrl });
+                                                        setMenuRestaurants(prev => prev.map(r => r.id === selectedRestaurantId ? { ...r, logo_url: logoUrl } : r));
+                                                        showToast('Logo güncellendi!', 'success');
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                } catch {
+                                                    showToast('Logo yüklenemedi', 'error');
+                                                }
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                        <button
+                                            className={styles.addBtnSmall}
+                                            onClick={() => document.getElementById('logo-upload')?.click()}
+                                        >
+                                            📤 Logo Yükle
+                                        </button>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: 6 }}>
+                                            Önerilen boyut: 200x200 px, PNG veya JPG
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
                             {/* Kategori Yönetimi */}
                             <div className={styles.menuMgmtBlock}>

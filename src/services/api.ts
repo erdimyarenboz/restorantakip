@@ -61,6 +61,8 @@ export const ordersAPI = {
 
 export const menuAPI = {
     getRestaurants: () => api.get('/menu/restaurants'),
+    getRestaurantBySlug: (slug: string) => api.get(`/menu/restaurants/${slug}`),
+    updateRestaurant: (id: string, data: { logo_url?: string; name?: string }) => api.patch(`/menu/restaurants/${id}`, data),
     getCategories: (restaurantId?: string) => api.get('/menu/categories', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
     getProducts: (restaurantId?: string) => api.get('/menu/products', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
     getAllProducts: (restaurantId?: string) => api.get('/menu/products/all', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),

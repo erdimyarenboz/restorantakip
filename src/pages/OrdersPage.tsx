@@ -8,8 +8,9 @@ export default function OrdersPage() {
     const navigate = useNavigate();
     const { orders } = useOrders();
 
-    // Sadece aktif siparişleri göster (Ödenmemiş olanlar)
-    const activeOrders = orders.filter((order) => order.status !== 'Ödendi');
+    // Sadece aktif siparişleri göster (Mutfakta veya Hazır olanlar)
+    const completedStatuses = ['Ödendi', 'Teslim Edildi', 'Kuryeye Teslim Edildi', 'İptal'];
+    const activeOrders = orders.filter((order) => !completedStatuses.includes(order.status));
 
     if (activeOrders.length === 0) {
         return (

@@ -1,6 +1,7 @@
 import { Link, useLocation, NavLink } from 'react-router-dom';
 import { useCart } from '../store/CartContext';
 import { useAuth } from '../store/AuthContext';
+import { useMenu } from '../store/MenuContext';
 import styles from '../styles/Header.module.css';
 
 interface HeaderProps {
@@ -11,6 +12,7 @@ interface HeaderProps {
 export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
     const { itemCount } = useCart();
     const { role, logout } = useAuth();
+    const { restaurantName, restaurantLogo } = useMenu();
     const location = useLocation();
     const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
     const showSearch = location.pathname === '/' && role === 'customer';
@@ -22,7 +24,12 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
         <header className={styles.header}>
             <div className={styles.container}>
                 <Link to={homePath} className={styles.logo}>
-                    🍽️ Restoran Sipariş
+                    {restaurantLogo ? (
+                        <img src={restaurantLogo} alt={restaurantName} className={styles.logoImage} />
+                    ) : (
+                        <>🍽️ </>
+                    )}
+                    {restaurantName}
                 </Link>
 
                 {showSearch && onSearch && (

@@ -22,6 +22,8 @@ interface MenuContextType {
     menuItems: MenuItem[];
     loading: boolean;
     error: string | null;
+    restaurantName: string;
+    restaurantLogo: string | null;
     getItemsByCategory: (categoryId: string) => MenuItem[];
     getItemById: (id: string) => MenuItem | undefined;
     refreshMenu: () => Promise<void>;
@@ -63,16 +65,27 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [restaurantName, setRestaurantName] = useState('Restoran Sipariş');
+    const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
 
     const loadMenu = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const [categoriesRes, productsRes] = await Promise.all([
+            const [categoriesRes, productsRes, restaurantsRes] = await Promise.all([
                 menuAPI.getCategories(),
                 menuAPI.getProducts(),
+                menuAPI.getRestaurants().catch(() => ({ data: [] })),
             ]);
+
+            // Set restaurant info from the first active restaurant
+            const restaurants = restaurantsRes.data;
+            if (restaurants && restaurants.length > 0) {
+                const rest = restaurants[0];
+                setRestaurantName(rest.name || 'Restoran Sipariş');
+                setRestaurantLogo(rest.logo_url || null);
+            }
 
             // Transform backend data to frontend format
             const backendCategories = categoriesRes.data;
@@ -133,6 +146,8 @@ export function MenuProvider({ children }: { children: ReactNode }) {
                 menuItems,
                 loading,
                 error,
+                restaurantName,
+                restaurantLogo,
                 getItemsByCategory,
                 getItemById,
                 refreshMenu,
