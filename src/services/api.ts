@@ -113,3 +113,12 @@ export const integrationsAPI = {
     remove: (id: string) => api.delete(`/integrations/${id}`),
     test: (id: string) => api.post(`/integrations/${id}/test`),
 };
+
+export const staffUsersAPI = {
+    getAll: (restaurantId?: string) => api.get('/crm/staff-users', { params: restaurantId ? { restaurant_id: restaurantId } : {} }),
+    create: (data: { restaurant_id: string; username: string; password: string; role: string; display_name?: string }) => api.post('/crm/staff-users', data),
+    update: (id: string, data: Record<string, any>) => api.put(`/crm/staff-users/${id}`, data),
+    remove: (id: string) => api.delete(`/crm/staff-users/${id}`),
+    login: (username: string, password: string) => api.post('/crm/login', { username, password }),
+};
+

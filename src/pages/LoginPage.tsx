@@ -2,14 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
+import { staffUsersAPI } from '../services/api';
 import styles from '../styles/LoginPage.module.css';
-
-// Demo credentials — in production, this would be an API call
-const CREDENTIALS: { username: string; password: string; role: 'admin' | 'waiter' | 'kitchen' | 'customer' }[] = [
-    { username: 'admin@kofteci.com', password: 'admin123', role: 'admin' },
-    { username: 'garson', password: '12345', role: 'waiter' },
-    { username: 'mutfak', password: '12345', role: 'kitchen' },
-];
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -19,26 +13,27 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        // Check credentials
-        const match = CREDENTIALS.find(c => c.username === username && c.password === password);
+        try {
+            const { data } = await staffUsersAPI.login(username, password);
 
-        setTimeout(() => {
-            if (match) {
-                login(match.role);
-                if (match.role === 'admin') navigate('/admin');
-                else if (match.role === 'waiter') navigate('/waiter');
-                else if (match.role === 'kitchen') navigate('/kitchen');
+            if (data.success && data.user) {
+                login(data.user.role);
+                if (data.user.role === 'admin') navigate('/admin');
+                else if (data.user.role === 'waiter') navigate('/waiter');
+                else if (data.user.role === 'kitchen') navigate('/kitchen');
                 else navigate('/menu');
-            } else {
-                showToast('Kullanıcı adı veya şifre hatalı!', 'error');
-                setPassword('');
             }
-            setLoading(false);
-        }, 400);
+        } catch (err: any) {
+            const msg = err.response?.data?.error || 'Kullanıcı adı veya şifre hatalı!';
+            showToast(msg, 'error');
+            setPassword('');
+        }
+
+        setLoading(false);
     };
 
     return (
@@ -90,25 +85,6 @@ export default function LoginPage() {
                             {loading ? '⏳ Giriş yapılıyor...' : '🔐 Giriş Yap'}
                         </button>
                     </form>
-
-                    {/* Demo info */}
-                    <div className={styles.demoInfo}>
-                        <p className={styles.demoTitle}>📋 Demo Hesaplar</p>
-                        <div className={styles.demoGrid}>
-                            <div className={styles.demoItem}>
-                                <span className={styles.demoRole}>👨‍💼 Yönetici</span>
-                                <span className={styles.demoCred}>admin@kofteci.com / admin123</span>
-                            </div>
-                            <div className={styles.demoItem}>
-                                <span className={styles.demoRole}>🧑‍🍳 Garson</span>
-                                <span className={styles.demoCred}>garson / 12345</span>
-                            </div>
-                            <div className={styles.demoItem}>
-                                <span className={styles.demoRole}>🍳 Mutfak</span>
-                                <span className={styles.demoCred}>mutfak / 12345</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

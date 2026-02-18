@@ -1,10 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
-import { crmAPI } from '../services/api';
+import { crmAPI, staffUsersAPI } from '../services/api';
 import styles from '../styles/PlatformDashboard.module.css';
 
-type CrmTab = 'dashboard' | 'active' | 'leads' | 'add';
+type CrmTab = 'dashboard' | 'active' | 'leads' | 'add' | 'users';
+
+interface StaffUser {
+    id: string;
+    restaurant_id: string;
+    username: string;
+    role: string;
+    display_name: string | null;
+    is_active: boolean;
+    created_at: string;
+}
+
+const ROLE_LABELS: Record<string, string> = {
+    admin: '👨‍💼 Yönetici',
+    waiter: '🧑‍🍳 Garson',
+    kitchen: '🍳 Mutfak',
+};
 
 interface CrmStats {
     total: number;
@@ -70,6 +86,15 @@ export default function PlatformDashboard() {
     const [successMsg, setSuccessMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
+    // Staff users state
+    const [staffUsers, setStaffUsers] = useState<StaffUser[]>([]);
+    const [selectedRestaurant, setSelectedRestaurant] = useState('');
+    const [userForm, setUserForm] = useState({
+        restaurant_id: '', username: '', password: '', role: 'admin', display_name: '',
+    });
+    const [userMsg, setUserMsg] = useState('');
+    const [userErr, setUserErr] = useState('');
+
     // Form state
     const [formData, setFormData] = useState({
         name: '', slug: '', phone: '', address: '',
@@ -134,6 +159,48 @@ export default function PlatformDashboard() {
         } catch (err: any) {
             setErrorMsg(err.response?.data?.error || 'Restoran eklenirken hata oluştu');
         }
+    };
+
+    const loadStaffUsers = useCallback(async (restId?: string) => {
+        try {
+            const { data } = await staffUsersAPI.getAll(restId);
+            setStaffUsers(data);
+        } catch { /* silently fail */ }
+    }, []);
+
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUserMsg('');
+        setUserErr('');
+
+        if (!userForm.restaurant_id || !userForm.username || !userForm.password) {
+            setUserErr('Restoran, kullanıcı adı ve şifre zorunludur');
+            return;
+        }
+
+        try {
+            await staffUsersAPI.create(userForm);
+            setUserMsg(`✅ "${userForm.username}" başarıyla oluşturuldu!`);
+            setUserForm(prev => ({ ...prev, username: '', password: '', display_name: '' }));
+            loadStaffUsers(selectedRestaurant || undefined);
+        } catch (err: any) {
+            setUserErr(err.response?.data?.error || 'Kullanıcı oluşturulamadı');
+        }
+    };
+
+    const handleDeleteUser = async (id: string, username: string) => {
+        if (!confirm(`"${username}" kullanıcısını silmek istediğinizden emin misiniz?`)) return;
+        try {
+            await staffUsersAPI.remove(id);
+            loadStaffUsers(selectedRestaurant || undefined);
+        } catch { /* silently fail */ }
+    };
+
+    const handleToggleUser = async (id: string, isActive: boolean) => {
+        try {
+            await staffUsersAPI.update(id, { is_active: !isActive });
+            loadStaffUsers(selectedRestaurant || undefined);
+        } catch { /* silently fail */ }
     };
 
     const handleStatusChange = async (id: string, newStatus: string) => {
@@ -202,6 +269,9 @@ export default function PlatformDashboard() {
                 </button>
                 <button className={`${styles.tab} ${tab === 'add' ? styles.tabActive : ''}`} onClick={() => setTab('add')}>
                     ➕ Restoran Ekle
+                </button>
+                <button className={`${styles.tab} ${tab === 'users' ? styles.tabActive : ''}`} onClick={() => { setTab('users'); loadStaffUsers(); }}>
+                    👥 Kullanıcılar
                 </button>
             </div>
 
@@ -406,6 +476,156 @@ export default function PlatformDashboard() {
                                         ➕ Restoran Ekle
                                     </button>
                                 </form>
+                            </div>
+                        )}
+
+                        {/* Users management */}
+                        {tab === 'users' && (
+                            <div className={styles.formSection}>
+                                <div className={styles.formTitle}>👥 Kullanıcı Yönetimi</div>
+                                <p style={{ color: '#94a3b8', marginBottom: '24px', fontSize: '0.9rem' }}>
+                                    Her restoran için garson, mutfak ve yönetici hesapları oluşturun.
+                                </p>
+
+                                {/* Filter by restaurant */}
+                                <div style={{ marginBottom: '24px' }}>
+                                    <label className={styles.formLabel}>Restoran Filtrele</label>
+                                    <select
+                                        className={styles.formSelect}
+                                        value={selectedRestaurant}
+                                        onChange={(e) => {
+                                            setSelectedRestaurant(e.target.value);
+                                            loadStaffUsers(e.target.value || undefined);
+                                        }}
+                                    >
+                                        <option value="">Tüm Restoranlar</option>
+                                        {restaurants.map(r => (
+                                            <option key={r.id} value={r.id}>{r.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Add user form */}
+                                <div style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+                                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#a78bfa', marginBottom: '16px' }}>➕ Yeni Kullanıcı Ekle</div>
+
+                                    {userMsg && <div className={styles.successMsg}>{userMsg}</div>}
+                                    {userErr && <div className={styles.errorMsg}>{userErr}</div>}
+
+                                    <form onSubmit={handleAddUser} className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Restoran *</label>
+                                            <select
+                                                className={styles.formSelect}
+                                                value={userForm.restaurant_id}
+                                                onChange={e => setUserForm(p => ({ ...p, restaurant_id: e.target.value }))}
+                                                required
+                                            >
+                                                <option value="">Restoran seçin</option>
+                                                {restaurants.map(r => (
+                                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Rol *</label>
+                                            <select
+                                                className={styles.formSelect}
+                                                value={userForm.role}
+                                                onChange={e => setUserForm(p => ({ ...p, role: e.target.value }))}
+                                            >
+                                                <option value="admin">👨‍💼 Yönetici</option>
+                                                <option value="waiter">🧑‍🍳 Garson</option>
+                                                <option value="kitchen">🍳 Mutfak</option>
+                                            </select>
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Kullanıcı Adı *</label>
+                                            <input
+                                                className={styles.formInput}
+                                                value={userForm.username}
+                                                onChange={e => setUserForm(p => ({ ...p, username: e.target.value }))}
+                                                placeholder="garson1"
+                                                required
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Şifre *</label>
+                                            <input
+                                                className={styles.formInput}
+                                                value={userForm.password}
+                                                onChange={e => setUserForm(p => ({ ...p, password: e.target.value }))}
+                                                placeholder="••••••"
+                                                required
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.formLabel}>Görünen Ad</label>
+                                            <input
+                                                className={styles.formInput}
+                                                value={userForm.display_name}
+                                                onChange={e => setUserForm(p => ({ ...p, display_name: e.target.value }))}
+                                                placeholder="Ahmet Yılmaz"
+                                            />
+                                        </div>
+                                        <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                            <button type="submit" className={styles.submitBtn} style={{ margin: 0, width: '100%' }}>
+                                                ➕ Kullanıcı Ekle
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                {/* Users list */}
+                                <div style={{ fontSize: '1rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '12px' }}>
+                                    📋 Mevcut Kullanıcılar ({staffUsers.length})
+                                </div>
+                                {staffUsers.length === 0 ? (
+                                    <div className={styles.emptyState}>
+                                        <div className={styles.emptyIcon}>👥</div>
+                                        <div className={styles.emptyText}>Henüz kullanıcı oluşturulmamış</div>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        {staffUsers.map(u => {
+                                            const rest = restaurants.find(r => r.id === u.restaurant_id);
+                                            return (
+                                                <div key={u.id} style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    padding: '12px 16px', borderRadius: '12px',
+                                                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                                    opacity: u.is_active ? 1 : 0.5,
+                                                }}>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '0.95rem' }}>
+                                                            {u.display_name || u.username}
+                                                            <span style={{ marginLeft: '8px', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '6px', background: u.role === 'admin' ? '#7c3aed22' : u.role === 'waiter' ? '#10b98122' : '#f59e0b22', color: u.role === 'admin' ? '#a78bfa' : u.role === 'waiter' ? '#34d399' : '#fbbf24' }}>
+                                                                {ROLE_LABELS[u.role] || u.role}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '2px' }}>
+                                                            @{u.username} • {rest?.name || u.restaurant_id}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            onClick={() => handleToggleUser(u.id, u.is_active)}
+                                                            style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: u.is_active ? '#fbbf24' : '#34d399', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                        >
+                                                            {u.is_active ? '⏸️ Pasif' : '▶️ Aktif'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteUser(u.id, u.username)}
+                                                            style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                        >
+                                                            🗑️ Sil
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>

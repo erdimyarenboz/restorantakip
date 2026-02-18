@@ -152,4 +152,158 @@ router.put('/restaurants/:id', async (req: Request, res: Response) => {
     }
 });
 
+// =================== STAFF USERS ===================
+
+// Get all staff users for a restaurant
+router.get('/staff-users', async (req: Request, res: Response) => {
+    try {
+        const restaurantId = req.query.restaurant_id as string;
+        let query = supabase
+            .from('staff_users')
+            .select('id, restaurant_id, username, role, display_name, is_active, created_at')
+            .order('created_at', { ascending: false });
+
+        if (restaurantId) {
+            query = query.eq('restaurant_id', restaurantId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error('Staff users list error:', error);
+        res.status(500).json({ error: 'Kullanıcılar yüklenemedi' });
+    }
+});
+
+// Create staff user
+router.post('/staff-users', async (req: Request, res: Response) => {
+    try {
+        const { restaurant_id, username, password, role, display_name } = req.body;
+
+        if (!restaurant_id || !username || !password || !role) {
+            res.status(400).json({ error: 'restaurant_id, username, password ve role zorunludur' });
+            return;
+        }
+
+        if (!['admin', 'waiter', 'kitchen'].includes(role)) {
+            res.status(400).json({ error: 'Geçersiz rol. admin, waiter veya kitchen olmalı' });
+            return;
+        }
+
+        const id = `usr-${Date.now().toString(36)}`;
+
+        const { data, error } = await supabase
+            .from('staff_users')
+            .insert({
+                id,
+                restaurant_id,
+                username,
+                password,
+                role,
+                display_name: display_name || null,
+                is_active: true,
+            })
+            .select('id, restaurant_id, username, role, display_name, is_active, created_at')
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                res.status(409).json({ error: 'Bu kullanıcı adı zaten kullanılıyor' });
+                return;
+            }
+            throw error;
+        }
+        res.status(201).json(data);
+    } catch (error) {
+        console.error('Staff user create error:', error);
+        res.status(500).json({ error: 'Kullanıcı oluşturulamadı' });
+    }
+});
+
+// Update staff user
+router.put('/staff-users/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { username, password, role, display_name, is_active } = req.body;
+
+        const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (username !== undefined) updates.username = username;
+        if (password !== undefined) updates.password = password;
+        if (role !== undefined) updates.role = role;
+        if (display_name !== undefined) updates.display_name = display_name;
+        if (is_active !== undefined) updates.is_active = is_active;
+
+        const { data, error } = await supabase
+            .from('staff_users')
+            .update(updates)
+            .eq('id', id)
+            .select('id, restaurant_id, username, role, display_name, is_active, created_at')
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                res.status(409).json({ error: 'Bu kullanıcı adı zaten kullanılıyor' });
+                return;
+            }
+            throw error;
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('Staff user update error:', error);
+        res.status(500).json({ error: 'Kullanıcı güncellenemedi' });
+    }
+});
+
+// Delete staff user
+router.delete('/staff-users/:id', async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { error } = await supabase.from('staff_users').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Staff user delete error:', error);
+        res.status(500).json({ error: 'Kullanıcı silinemedi' });
+    }
+});
+
+// =================== STAFF LOGIN ===================
+
+router.post('/login', async (req: Request, res: Response) => {
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            res.status(400).json({ error: 'Kullanıcı adı ve şifre zorunludur' });
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('staff_users')
+            .select('id, restaurant_id, username, role, display_name, is_active')
+            .eq('username', username)
+            .eq('password', password)
+            .single();
+
+        if (error || !data) {
+            res.status(401).json({ error: 'Kullanıcı adı veya şifre hatalı' });
+            return;
+        }
+
+        if (!data.is_active) {
+            res.status(403).json({ error: 'Hesabınız devre dışı bırakılmıştır' });
+            return;
+        }
+
+        res.json({
+            success: true,
+            user: data,
+        });
+    } catch (error) {
+        console.error('Staff login error:', error);
+        res.status(500).json({ error: 'Giriş yapılamadı' });
+    }
+});
+
 export default router;
