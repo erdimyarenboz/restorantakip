@@ -39,7 +39,7 @@ router.get('/restaurants', async (req: Request, res: Response) => {
 
         let query = supabase
             .from('restaurants')
-            .select('id, name, slug, phone, address, is_active, subscription_plan, contract_months, contract_start_date, contract_status, contact_person, contact_phone, notes, monthly_fee, created_at')
+            .select('id, name, slug, phone, address, is_active, subscription_plan, contract_months, contract_start_date, contract_status, contact_person, contact_phone, contact_email, notes, monthly_fee, created_at')
             .order('created_at', { ascending: false });
 
         if (status) {
@@ -67,6 +67,7 @@ router.post('/restaurants', async (req: Request, res: Response) => {
             address,
             contact_person,
             contact_phone,
+            contact_email,
             contract_months,
             contract_start_date,
             contract_status,
@@ -92,6 +93,7 @@ router.post('/restaurants', async (req: Request, res: Response) => {
                 address: address || null,
                 contact_person: contact_person || null,
                 contact_phone: contact_phone || null,
+                contact_email: contact_email || null,
                 contract_months: contract_months || 0,
                 contract_start_date: contract_start_date || null,
                 contract_status: contract_status || 'lead',
@@ -127,7 +129,7 @@ router.put('/restaurants/:id', async (req: Request, res: Response) => {
         const allowedFields = [
             'name', 'phone', 'address', 'is_active', 'subscription_plan',
             'contract_months', 'contract_start_date', 'contract_status',
-            'contact_person', 'contact_phone', 'notes', 'monthly_fee',
+            'contact_person', 'contact_phone', 'contact_email', 'notes', 'monthly_fee',
         ];
 
         const safeUpdates: Record<string, any> = { updated_at: new Date().toISOString() };
