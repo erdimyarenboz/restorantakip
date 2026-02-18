@@ -81,8 +81,10 @@ export function MenuProvider({ children }: { children: ReactNode }) {
 
             // Set restaurant info from the first active restaurant
             const restaurants = restaurantsRes.data;
+            console.log('[MenuContext] Restaurants data:', JSON.stringify(restaurants?.map((r: any) => ({ id: r.id, name: r.name, logo_url: r.logo_url }))));
             if (restaurants && restaurants.length > 0) {
                 const rest = restaurants[0];
+                console.log('[MenuContext] Setting logo from restaurant:', rest.name, '| logo_url:', rest.logo_url);
                 setRestaurantName(rest.name || 'Restoran Sipariş');
                 setRestaurantLogo(rest.logo_url || null);
             }
