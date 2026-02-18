@@ -11,6 +11,7 @@ import tableRoutes from './routes/tables';
 import waiterRoutes from './routes/waiters';
 import crmRoutes from './routes/crm';
 import integrationsRoutes from './routes/integrations';
+import emailRoutes from './routes/email';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/v1/tables', tableRoutes);
 app.use('/api/v1/waiters', waiterRoutes);
 app.use('/api/v1/crm', crmRoutes);
 app.use('/api/v1/integrations', integrationsRoutes);
+app.use('/api/v1/email', emailRoutes);
 
 // Error handling
 app.use(errorHandler);

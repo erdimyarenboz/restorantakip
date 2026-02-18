@@ -122,3 +122,7 @@ export const staffUsersAPI = {
     login: (username: string, password: string) => api.post('/crm/login', { username, password }),
 };
 
+export const emailAPI = {
+    sendBulk: (emails: string[], subject?: string) => api.post('/email/send', { emails, subject }),
+};
+

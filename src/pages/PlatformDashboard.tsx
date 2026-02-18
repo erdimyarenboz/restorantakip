@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/AuthContext';
-import { crmAPI, staffUsersAPI } from '../services/api';
+import { crmAPI, staffUsersAPI, emailAPI } from '../services/api';
 import styles from '../styles/PlatformDashboard.module.css';
 
-type CrmTab = 'dashboard' | 'active' | 'leads' | 'add' | 'users';
+type CrmTab = 'dashboard' | 'active' | 'leads' | 'add' | 'users' | 'email';
 
 interface StaffUser {
     id: string;
@@ -44,6 +44,7 @@ interface Restaurant {
     contract_status: string;
     contact_person: string | null;
     contact_phone: string | null;
+    contact_email: string | null;
     notes: string | null;
     monthly_fee: string;
     created_at: string;
@@ -95,10 +96,16 @@ export default function PlatformDashboard() {
     const [userMsg, setUserMsg] = useState('');
     const [userErr, setUserErr] = useState('');
 
+    // Email state
+    const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+    const [emailSubject, setEmailSubject] = useState('🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın');
+    const [emailSending, setEmailSending] = useState(false);
+    const [emailResult, setEmailResult] = useState<{ sent: number; failed: number } | null>(null);
+
     // Form state
     const [formData, setFormData] = useState({
         name: '', slug: '', phone: '', address: '',
-        contact_person: '', contact_phone: '',
+        contact_person: '', contact_phone: '', contact_email: '',
         contract_months: 0, contract_start_date: '',
         contract_status: 'lead', monthly_fee: 0,
         subscription_plan: 'free', notes: '',
@@ -149,7 +156,7 @@ export default function PlatformDashboard() {
             setSuccessMsg(`✅ "${formData.name}" başarıyla eklendi!`);
             setFormData({
                 name: '', slug: '', phone: '', address: '',
-                contact_person: '', contact_phone: '',
+                contact_person: '', contact_phone: '', contact_email: '',
                 contract_months: 0, contract_start_date: '',
                 contract_status: 'lead', monthly_fee: 0,
                 subscription_plan: 'free', notes: '',
@@ -273,6 +280,9 @@ export default function PlatformDashboard() {
                 <button className={`${styles.tab} ${tab === 'users' ? styles.tabActive : ''}`} onClick={() => { setTab('users'); loadStaffUsers(); }}>
                     👥 Kullanıcılar
                 </button>
+                <button className={`${styles.tab} ${tab === 'email' ? styles.tabActive : ''}`} onClick={() => { setTab('email'); setEmailResult(null); }}>
+                    📧 Toplu E-posta
+                </button>
             </div>
 
             {/* Content */}
@@ -387,6 +397,16 @@ export default function PlatformDashboard() {
                                             value={formData.contact_phone}
                                             onChange={e => setFormData(p => ({ ...p, contact_phone: e.target.value }))}
                                             placeholder="0532 xxx xxxx"
+                                        />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.formLabel}>E-posta Adresi 📧</label>
+                                        <input
+                                            type="email"
+                                            className={styles.formInput}
+                                            value={formData.contact_email}
+                                            onChange={e => setFormData(p => ({ ...p, contact_email: e.target.value }))}
+                                            placeholder="restoran@ornek.com"
                                         />
                                     </div>
                                     <div className={styles.formGroup}>
@@ -624,6 +644,140 @@ export default function PlatformDashboard() {
                                                 </div>
                                             );
                                         })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Bulk Email */}
+                        {tab === 'email' && (
+                            <div className={styles.formSection}>
+                                <div className={styles.formTitle}>📧 Toplu E-posta Gönder</div>
+                                <p style={{ color: '#94a3b8', marginBottom: '24px', fontSize: '0.9rem' }}>
+                                    Potansiyel müşterilere tanıtım e-postası gönderin. E-posta adresi olan restoranlar listelenir.
+                                </p>
+
+                                {/* Subject */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label className={styles.formLabel}>E-posta Konusu</label>
+                                    <input
+                                        className={styles.formInput}
+                                        value={emailSubject}
+                                        onChange={e => setEmailSubject(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Recipients */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label className={styles.formLabel}>Alıcıları Seçin</label>
+                                    {(() => {
+                                        const withEmail = restaurants.filter(r => r.contact_email);
+                                        if (withEmail.length === 0) {
+                                            return (
+                                                <div className={styles.emptyState}>
+                                                    <div className={styles.emptyIcon}>📧</div>
+                                                    <div className={styles.emptyText}>
+                                                        Hiçbir restoranın e-posta adresi yok.<br />
+                                                        Önce "Restoran Ekle" sekmesinden e-posta bilgisi girin.
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <>
+                                                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedEmails(withEmail.map(r => r.contact_email!))}
+                                                        style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.1)', color: '#a78bfa', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                    >
+                                                        ☑️ Tümünü Seç
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedEmails([])}
+                                                        style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#94a3b8', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                    >
+                                                        Temizle
+                                                    </button>
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '300px', overflowY: 'auto' }}>
+                                                    {withEmail.map(r => (
+                                                        <label key={r.id} style={{
+                                                            display: 'flex', alignItems: 'center', gap: '12px',
+                                                            padding: '10px 14px', borderRadius: '10px',
+                                                            background: selectedEmails.includes(r.contact_email!) ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.03)',
+                                                            border: `1px solid ${selectedEmails.includes(r.contact_email!) ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                            cursor: 'pointer', transition: 'all 0.2s',
+                                                        }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedEmails.includes(r.contact_email!)}
+                                                                onChange={e => {
+                                                                    if (e.target.checked) setSelectedEmails(p => [...p, r.contact_email!]);
+                                                                    else setSelectedEmails(p => p.filter(em => em !== r.contact_email));
+                                                                }}
+                                                                style={{ accentColor: '#7c3aed', width: '16px', height: '16px' }}
+                                                            />
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ color: '#f1f5f9', fontWeight: 600, fontSize: '0.9rem' }}>{r.name}</div>
+                                                                <div style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{r.contact_email}</div>
+                                                            </div>
+                                                            <span style={{
+                                                                fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px',
+                                                                background: r.contract_status === 'lead' ? '#f59e0b22' : '#10b98122',
+                                                                color: r.contract_status === 'lead' ? '#fbbf24' : '#34d399',
+                                                            }}>
+                                                                {r.contract_status === 'lead' ? 'Potansiyel' : r.contract_status}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+
+                                {/* Send button */}
+                                {selectedEmails.length > 0 && (
+                                    <button
+                                        className={styles.submitBtn}
+                                        disabled={emailSending}
+                                        onClick={async () => {
+                                            setEmailSending(true);
+                                            setEmailResult(null);
+                                            try {
+                                                const { data } = await emailAPI.sendBulk(selectedEmails, emailSubject);
+                                                const sent = data.results?.filter((r: any) => r.success).length || 0;
+                                                const failed = data.results?.filter((r: any) => !r.success).length || 0;
+                                                setEmailResult({ sent, failed });
+                                                if (sent > 0) setSelectedEmails([]);
+                                            } catch {
+                                                setEmailResult({ sent: 0, failed: selectedEmails.length });
+                                            }
+                                            setEmailSending(false);
+                                        }}
+                                    >
+                                        {emailSending
+                                            ? `⏳ Gönderiliyor... (${selectedEmails.length} alıcı)`
+                                            : `📨 ${selectedEmails.length} Kişiye E-posta Gönder`
+                                        }
+                                    </button>
+                                )}
+
+                                {/* Results */}
+                                {emailResult && (
+                                    <div style={{
+                                        marginTop: '16px', padding: '16px', borderRadius: '12px',
+                                        background: emailResult.failed === 0 ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                                        border: `1px solid ${emailResult.failed === 0 ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+                                    }}>
+                                        <div style={{ color: '#f1f5f9', fontWeight: 700, marginBottom: '4px' }}>
+                                            {emailResult.failed === 0 ? '✅ Tüm E-postalar Gönderildi!' : '⚠️ Kısmi Gönderim'}
+                                        </div>
+                                        <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                                            {emailResult.sent} başarılı{emailResult.failed > 0 ? `, ${emailResult.failed} başarısız` : ''}
+                                        </div>
                                     </div>
                                 )}
                             </div>
