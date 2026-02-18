@@ -660,6 +660,12 @@
     text-decoration: none;
     font-size: 0.88rem;
     transition: color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-align: left;
+    font-family: inherit;
 }
 
 .footerLink:hover {
