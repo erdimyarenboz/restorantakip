@@ -3,9 +3,8 @@ import nodemailer from 'nodemailer';
 
 const router = Router();
 
-// HTML email template
-const getEmailTemplate = () => `
-<!DOCTYPE html>
+// Default HTML email template
+const getDefaultTemplate = () => `<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -166,13 +165,17 @@ const getEmailTemplate = () => `
         </tr>
     </table>
 </body>
-</html>
-`;
+</html>`;
+
+// GET default template for preview/editing
+router.get('/template', (_req: Request, res: Response) => {
+    res.json({ html: getDefaultTemplate() });
+});
 
 // Send bulk email to leads
 router.post('/send', async (req: Request, res: Response) => {
     try {
-        const { emails, subject } = req.body;
+        const { emails, subject, customHtml } = req.body;
 
         if (!emails || !Array.isArray(emails) || emails.length === 0) {
             res.status(400).json({ error: 'En az bir e-posta adresi gereklidir' });
@@ -192,7 +195,8 @@ router.post('/send', async (req: Request, res: Response) => {
             },
         });
 
-        const html = getEmailTemplate();
+        // Use custom HTML if provided, otherwise use default template
+        const html = customHtml || getDefaultTemplate();
         const results: { email: string; success: boolean; error?: string }[] = [];
 
         for (const email of emails) {

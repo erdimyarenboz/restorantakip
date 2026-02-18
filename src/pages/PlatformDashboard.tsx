@@ -101,6 +101,8 @@ export default function PlatformDashboard() {
     const [emailSubject, setEmailSubject] = useState('🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın');
     const [emailSending, setEmailSending] = useState(false);
     const [emailResult, setEmailResult] = useState<{ sent: number; failed: number } | null>(null);
+    const [emailHtml, setEmailHtml] = useState('');
+    const [showPreview, setShowPreview] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -131,6 +133,15 @@ export default function PlatformDashboard() {
         loadStats();
         loadRestaurants();
     }, [loadStats, loadRestaurants]);
+
+    // Load email template when switching to email tab
+    useEffect(() => {
+        if (tab === 'email' && !emailHtml) {
+            emailAPI.getTemplate().then(({ data }) => {
+                setEmailHtml(data.html);
+            }).catch(() => { /* silently fail */ });
+        }
+    }, [tab, emailHtml]);
 
     const handleLogout = () => {
         logout();
@@ -654,7 +665,7 @@ export default function PlatformDashboard() {
                             <div className={styles.formSection}>
                                 <div className={styles.formTitle}>📧 Toplu E-posta Gönder</div>
                                 <p style={{ color: '#94a3b8', marginBottom: '24px', fontSize: '0.9rem' }}>
-                                    Potansiyel müşterilere tanıtım e-postası gönderin. E-posta adresi olan restoranlar listelenir.
+                                    Potansiyel müşterilere tanıtım e-postası gönderin. İçeriği düzenleyip önizleme yapabilirsiniz.
                                 </p>
 
                                 {/* Subject */}
@@ -665,6 +676,86 @@ export default function PlatformDashboard() {
                                         value={emailSubject}
                                         onChange={e => setEmailSubject(e.target.value)}
                                     />
+                                </div>
+
+                                {/* Editor / Preview Toggle */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                        <label className={styles.formLabel} style={{ margin: 0 }}>E-posta İçeriği</label>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPreview(false)}
+                                                style={{
+                                                    padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer',
+                                                    border: `1px solid ${!showPreview ? 'rgba(124,58,237,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                                                    background: !showPreview ? 'rgba(124,58,237,0.15)' : 'transparent',
+                                                    color: !showPreview ? '#a78bfa' : '#94a3b8',
+                                                }}
+                                            >
+                                                ✏️ Düzenle
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPreview(true)}
+                                                style={{
+                                                    padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer',
+                                                    border: `1px solid ${showPreview ? 'rgba(124,58,237,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                                                    background: showPreview ? 'rgba(124,58,237,0.15)' : 'transparent',
+                                                    color: showPreview ? '#a78bfa' : '#94a3b8',
+                                                }}
+                                            >
+                                                👁️ Önizleme
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    try {
+                                                        const { data } = await emailAPI.getTemplate();
+                                                        setEmailHtml(data.html);
+                                                    } catch { /* */ }
+                                                }}
+                                                style={{
+                                                    padding: '6px 14px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer',
+                                                    border: '1px solid rgba(245,158,11,0.3)',
+                                                    background: 'rgba(245,158,11,0.08)',
+                                                    color: '#fbbf24',
+                                                }}
+                                            >
+                                                🔄 Varsayılana Dön
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {!showPreview ? (
+                                        <textarea
+                                            value={emailHtml}
+                                            onChange={e => setEmailHtml(e.target.value)}
+                                            style={{
+                                                width: '100%', minHeight: '400px', padding: '16px',
+                                                background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px', color: '#e2e8f0', fontSize: '0.85rem',
+                                                fontFamily: '"Fira Code", "Cascadia Code", monospace',
+                                                lineHeight: '1.6', resize: 'vertical', outline: 'none',
+                                                boxSizing: 'border-box',
+                                            }}
+                                            placeholder="HTML e-posta içeriğini buraya yazın..."
+                                        />
+                                    ) : (
+                                        <div style={{
+                                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
+                                            overflow: 'hidden', background: '#fff',
+                                        }}>
+                                            <iframe
+                                                srcDoc={emailHtml}
+                                                style={{
+                                                    width: '100%', minHeight: '600px', border: 'none',
+                                                    display: 'block',
+                                                }}
+                                                title="E-posta Önizleme"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Recipients */}
@@ -747,7 +838,11 @@ export default function PlatformDashboard() {
                                             setEmailSending(true);
                                             setEmailResult(null);
                                             try {
-                                                const { data } = await emailAPI.sendBulk(selectedEmails, emailSubject);
+                                                const { data } = await emailAPI.sendBulk(
+                                                    selectedEmails,
+                                                    emailSubject,
+                                                    emailHtml || undefined
+                                                );
                                                 const sent = data.results?.filter((r: any) => r.success).length || 0;
                                                 const failed = data.results?.filter((r: any) => !r.success).length || 0;
                                                 setEmailResult({ sent, failed });

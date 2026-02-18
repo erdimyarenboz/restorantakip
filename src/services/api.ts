@@ -123,6 +123,8 @@ export const staffUsersAPI = {
 };
 
 export const emailAPI = {
-    sendBulk: (emails: string[], subject?: string) => api.post('/email/send', { emails, subject }),
+    getTemplate: () => api.get('/email/template'),
+    sendBulk: (emails: string[], subject?: string, customHtml?: string) =>
+        api.post('/email/send', { emails, subject, customHtml }),
 };
 
