@@ -44,7 +44,7 @@ const INTEGRATIONS = [
 const PRICING = [
     {
         name: 'Başlangıç',
-        price: '₺499',
+        price: '₺750',
         period: '/ay',
         features: [
             'QR Menü & Sipariş',
@@ -59,7 +59,7 @@ const PRICING = [
     },
     {
         name: 'Profesyonel',
-        price: '₺999',
+        price: '₺1.300',
         period: '/ay',
         features: [
             'QR Menü & Sipariş',
@@ -76,7 +76,7 @@ const PRICING = [
     },
     {
         name: 'Kurumsal',
-        price: '₺1.999',
+        price: '₺2.000',
         period: '/ay',
         features: [
             'Tüm Profesyonel Özellikler',
@@ -239,6 +239,9 @@ export default function LandingPage() {
                     ))}
                 </div>
                 <p className={styles.pricingTrial}>🎁 Tüm planlar 14 gün ücretsiz deneme ile başlar</p>
+                <p className={styles.pricingTrial} style={{ marginTop: '8px', fontSize: '0.85rem', opacity: 0.8 }}>
+                    📱 İlk kurulum için QR menü hediye — Ek QR menü basımı adet başı 30,00₺ ücretlendirilir.
+                </p>
             </section>
 
             {/* ─── Footer ─── */}
