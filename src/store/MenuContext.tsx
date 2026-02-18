@@ -5,6 +5,7 @@ interface Category {
     id: string;
     name: string;
     icon: string;
+    image_url?: string | null;
 }
 
 interface MenuItem {
@@ -83,6 +84,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
                 id: cat.id,
                 name: cat.name,
                 icon: cat.icon as any,
+                image_url: cat.image_url || null,
             }));
 
             const transformedItems: MenuItem[] = backendProducts.map((product: any) => ({

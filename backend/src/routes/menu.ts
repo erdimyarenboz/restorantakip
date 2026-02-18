@@ -78,7 +78,7 @@ router.get('/categories', async (req: Request, res: Response) => {
 // Create category
 router.post('/categories', async (req: Request, res: Response) => {
     try {
-        const { name, icon, sort_order, restaurant_id } = req.body;
+        const { name, icon, sort_order, restaurant_id, image_url } = req.body;
         if (!name) return res.status(400).json({ error: 'Kategori adı gerekli' });
 
         // Use provided restaurant_id or fallback
@@ -94,9 +94,12 @@ router.post('/categories', async (req: Request, res: Response) => {
         if (!rid) return res.status(400).json({ error: 'Restaurant bulunamadı' });
 
         const id = `cat-${Date.now()}`;
+        const insertData: any = { id, restaurant_id: rid, name, icon: icon || '', sort_order: sort_order || 0 };
+        if (image_url) insertData.image_url = image_url;
+
         const { data, error } = await supabase
             .from('categories')
-            .insert({ id, restaurant_id: rid, name, icon: icon || '🍽️', sort_order: sort_order || 0 })
+            .insert(insertData)
             .select()
             .single();
 
@@ -112,12 +115,13 @@ router.post('/categories', async (req: Request, res: Response) => {
 router.patch('/categories/:id', async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, icon, sort_order } = req.body;
+        const { name, icon, sort_order, image_url } = req.body;
 
         const updateData: any = {};
         if (name !== undefined) updateData.name = name;
         if (icon !== undefined) updateData.icon = icon;
         if (sort_order !== undefined) updateData.sort_order = sort_order;
+        if (image_url !== undefined) updateData.image_url = image_url;
 
         const { data, error } = await supabase
             .from('categories')

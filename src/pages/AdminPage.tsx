@@ -78,6 +78,7 @@ interface CategoryData {
     name: string;
     icon: string;
     sort_order: number;
+    image_url?: string | null;
 }
 
 interface ProductData {
@@ -172,8 +173,12 @@ export default function AdminPage() {
     const [menuSelectedCat, setMenuSelectedCat] = useState<string>('all');
     const [showAddCategory, setShowAddCategory] = useState(false);
     const [newCatName, setNewCatName] = useState('');
-    const [newCatIcon, setNewCatIcon] = useState('🍽️');
     const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
+    // Category image states
+    const [newCatImageFile, setNewCatImageFile] = useState<File | null>(null);
+    const [newCatImagePreview, setNewCatImagePreview] = useState<string>('');
+    const [editCatImageFile, setEditCatImageFile] = useState<File | null>(null);
+    const [editCatImagePreview, setEditCatImagePreview] = useState<string>('');
     const [showAddProduct, setShowAddProduct] = useState(false);
     const [newProdName, setNewProdName] = useState('');
     const [newProdPrice, setNewProdPrice] = useState('');
@@ -1076,7 +1081,7 @@ export default function AdminPage() {
                         <div className={styles.menuMgmtBlock}>
                             <div className={styles.menuBlockHeader}>
                                 <h3>📁 Kategoriler</h3>
-                                <button className={styles.addBtnSmall} onClick={() => { setShowAddCategory(!showAddCategory); setEditingCategory(null); }}>
+                                <button className={styles.addBtnSmall} onClick={() => { setShowAddCategory(!showAddCategory); setEditingCategory(null); setNewCatImageFile(null); setNewCatImagePreview(''); }}>
                                     {showAddCategory ? '✕ İptal' : '+ Kategori Ekle'}
                                 </button>
                             </div>
@@ -1086,20 +1091,37 @@ export default function AdminPage() {
                                     e.preventDefault();
                                     if (!newCatName.trim()) return;
                                     try {
-                                        await menuAPI.createCategory({ name: newCatName.trim(), icon: newCatIcon, sort_order: menuCategories.length + 1, restaurant_id: selectedRestaurantId });
+                                        let catImageUrl: string | undefined;
+                                        if (newCatImageFile) {
+                                            setImageUploading(true);
+                                            catImageUrl = await uploadImageFile(newCatImageFile) || undefined;
+                                            setImageUploading(false);
+                                        }
+                                        await menuAPI.createCategory({ name: newCatName.trim(), icon: '', sort_order: menuCategories.length + 1, restaurant_id: selectedRestaurantId, image_url: catImageUrl });
                                         showToast('Kategori eklendi!', 'success');
-                                        setNewCatName(''); setNewCatIcon('🍽️'); setShowAddCategory(false);
+                                        setNewCatName(''); setShowAddCategory(false); setNewCatImageFile(null); setNewCatImagePreview('');
                                         loadMenuData();
-                                    } catch { showToast('Kategori eklenemedi', 'error'); }
+                                    } catch { setImageUploading(false); showToast('Kategori eklenemedi', 'error'); }
                                 }}>
-                                    <div className={styles.menuFormRow}>
-                                        <select value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} className={styles.menuIconSelect}>
-                                            {['🍽️', '☕', '🍳', '🥗', '🍰', '🍕', '🍔', '🥤', '🍹', '🍖', '🐟', '🍝', '🌮', '🥩', '🧁', '🍜', '🍣'].map(ic => (
-                                                <option key={ic} value={ic}>{ic}</option>
-                                            ))}
-                                        </select>
+                                    <div className={styles.menuFormRow} style={{ flexDirection: 'column', gap: '12px' }}>
                                         <input className={styles.menuInput} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="Kategori adı" required />
-                                        <button type="submit" className={styles.menuSaveBtn}>Ekle</button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <label style={{ cursor: 'pointer', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.15)', borderRadius: '8px', color: 'var(--color-primary)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                                📷 Görsel Seç
+                                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
+                                                    const file = e.target.files?.[0] || null;
+                                                    if (file) {
+                                                        if (file.size > MAX_IMAGE_SIZE) { showToast('Görsel en fazla 5MB olmalı', 'error'); return; }
+                                                        setNewCatImageFile(file);
+                                                        const reader = new FileReader();
+                                                        reader.onload = (ev) => setNewCatImagePreview(ev.target?.result as string);
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }} />
+                                            </label>
+                                            {newCatImagePreview && <img src={newCatImagePreview} alt="Preview" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />}
+                                        </div>
+                                        <button type="submit" className={styles.menuSaveBtn} disabled={imageUploading}>{imageUploading ? 'Yükleniyor...' : 'Ekle'}</button>
                                     </div>
                                 </form>
                             )}
@@ -1108,21 +1130,42 @@ export default function AdminPage() {
                                 <form className={styles.menuForm} onSubmit={async (e) => {
                                     e.preventDefault();
                                     try {
-                                        await menuAPI.updateCategory(editingCategory.id, { name: editingCategory.name, icon: editingCategory.icon });
+                                        let catImageUrl: string | undefined;
+                                        if (editCatImageFile) {
+                                            setImageUploading(true);
+                                            catImageUrl = await uploadImageFile(editCatImageFile) || undefined;
+                                            setImageUploading(false);
+                                        }
+                                        await menuAPI.updateCategory(editingCategory.id, { name: editingCategory.name, icon: '', image_url: catImageUrl || editingCategory.image_url || undefined });
                                         showToast('Kategori güncellendi!', 'success');
-                                        setEditingCategory(null);
+                                        setEditingCategory(null); setEditCatImageFile(null); setEditCatImagePreview('');
                                         loadMenuData();
-                                    } catch { showToast('Güncellenemedi', 'error'); }
+                                    } catch { setImageUploading(false); showToast('Güncellenemedi', 'error'); }
                                 }}>
-                                    <div className={styles.menuFormRow}>
-                                        <select value={editingCategory.icon} onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })} className={styles.menuIconSelect}>
-                                            {['🍽️', '☕', '🍳', '🥗', '🍰', '🍕', '🍔', '🥤', '🍹', '🍖', '🐟', '🍝', '🌮', '🥩', '🧁', '🍜', '🍣'].map(ic => (
-                                                <option key={ic} value={ic}>{ic}</option>
-                                            ))}
-                                        </select>
+                                    <div className={styles.menuFormRow} style={{ flexDirection: 'column', gap: '12px' }}>
                                         <input className={styles.menuInput} value={editingCategory.name} onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })} required />
-                                        <button type="submit" className={styles.menuSaveBtn}>Kaydet</button>
-                                        <button type="button" className={styles.menuCancelBtn} onClick={() => setEditingCategory(null)}>İptal</button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <label style={{ cursor: 'pointer', padding: '8px 16px', background: 'rgba(16, 185, 129, 0.15)', borderRadius: '8px', color: 'var(--color-primary)', fontSize: '0.85rem', fontWeight: 600 }}>
+                                                📷 Görsel Değiştir
+                                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
+                                                    const file = e.target.files?.[0] || null;
+                                                    if (file) {
+                                                        if (file.size > MAX_IMAGE_SIZE) { showToast('Görsel en fazla 5MB olmalı', 'error'); return; }
+                                                        setEditCatImageFile(file);
+                                                        const reader = new FileReader();
+                                                        reader.onload = (ev) => setEditCatImagePreview(ev.target?.result as string);
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }} />
+                                            </label>
+                                            {(editCatImagePreview || editingCategory.image_url) && (
+                                                <img src={editCatImagePreview || editingCategory.image_url || ''} alt="Preview" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+                                            )}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button type="submit" className={styles.menuSaveBtn} disabled={imageUploading}>{imageUploading ? 'Yükleniyor...' : 'Kaydet'}</button>
+                                            <button type="button" className={styles.menuCancelBtn} onClick={() => { setEditingCategory(null); setEditCatImageFile(null); setEditCatImagePreview(''); }}>İptal</button>
+                                        </div>
                                     </div>
                                 </form>
                             )}
@@ -1130,10 +1173,17 @@ export default function AdminPage() {
                             <div className={styles.menuCatList}>
                                 {menuCategories.map((cat) => (
                                     <div key={cat.id} className={styles.menuCatItem}>
-                                        <span className={styles.menuCatInfo}>{cat.icon} {cat.name}</span>
+                                        <span className={styles.menuCatInfo} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {cat.image_url ? (
+                                                <img src={cat.image_url} alt={cat.name} style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover' }} />
+                                            ) : (
+                                                <span style={{ width: 32, height: 32, borderRadius: 6, background: 'var(--color-surface-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>📁</span>
+                                            )}
+                                            {cat.name}
+                                        </span>
                                         <span className={styles.menuCatCount}>{menuProducts.filter(p => p.category_id === cat.id).length} ürün</span>
                                         <div className={styles.menuCatActions}>
-                                            <button className={styles.editBtnSmall} onClick={() => { setEditingCategory(cat); setShowAddCategory(false); }}>✏️</button>
+                                            <button className={styles.editBtnSmall} onClick={() => { setEditingCategory(cat); setShowAddCategory(false); setEditCatImageFile(null); setEditCatImagePreview(''); }}>✏️</button>
                                             <button className={styles.deleteBtnSmall} onClick={async () => {
                                                 if (!window.confirm(`"${cat.name}" kategorisi ve tüm ürünleri silinecek. Emin misiniz?`)) return;
                                                 try {
