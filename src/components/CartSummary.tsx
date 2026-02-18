@@ -1,4 +1,5 @@
 import { formatCurrency } from '../utils/format';
+import { useLanguage } from '../i18n/i18n';
 import styles from '../styles/CartSummary.module.css';
 
 interface CartSummaryProps {
@@ -12,29 +13,31 @@ export default function CartSummary({
     subtotal,
     total,
     checkoutDisabled = false,
-    checkoutLabel = 'Toplam',
+    checkoutLabel,
 }: CartSummaryProps) {
+    const { t } = useLanguage();
     const isDisabled = checkoutDisabled;
+    const label = checkoutLabel || t('total');
 
     return (
         <div className={styles.summary}>
             <div className={styles.row}>
-                <span>Ara Toplam:</span>
+                <span>{t('subtotal')}:</span>
                 <span>{formatCurrency(subtotal)}</span>
             </div>
             <div className={`${styles.row} ${styles.total}`}>
-                <span>Toplam:</span>
+                <span>{t('total')}:</span>
                 <span>{formatCurrency(total)}</span>
             </div>
 
-            {checkoutLabel && (
+            {label && (
                 <button
                     type="submit"
                     className={styles.checkoutButton}
                     disabled={isDisabled}
-                    aria-label={checkoutLabel}
+                    aria-label={label}
                 >
-                    {checkoutLabel}
+                    {label}
                 </button>
             )}
         </div>

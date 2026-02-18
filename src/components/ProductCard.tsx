@@ -1,5 +1,6 @@
 import type { Product } from '../types';
 import { useCart } from '../store/CartContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency } from '../utils/format';
 import styles from '../styles/ProductCard.module.css';
 
@@ -9,6 +10,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
     const { addItem } = useCart();
+    const { t } = useLanguage();
 
     const handleAddToCart = () => {
         addItem(product);
@@ -29,9 +31,9 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <button
                         className={styles.button}
                         onClick={handleAddToCart}
-                        aria-label={`${product.name} sepete ekle`}
+                        aria-label={`${product.name} ${t('addToCart')}`}
                     >
-                        Sepete Ekle
+                        {t('addToCart')}
                     </button>
                 </div>
             </div>

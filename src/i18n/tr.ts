@@ -1,0 +1,177 @@
+export const tr = {
+    // Common
+    menu: 'Menü',
+    order: 'Sipariş',
+    orders: 'Siparişlerim',
+    cart: 'Sepet',
+    logout: 'Çıkış',
+    back: 'Geri Dön',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    delete: 'Sil',
+    edit: 'Düzenle',
+    close: 'Kapat',
+    loading: 'Yükleniyor...',
+    error: 'Hata',
+    success: 'Başarılı',
+    yes: 'Evet',
+    no: 'Hayır',
+    search: 'Ara...',
+    noResults: 'Sonuç bulunamadı',
+
+    // Login
+    welcome: 'Hoş Geldiniz',
+    continueToLogin: 'Devam etmek için giriş yapın',
+    roleSelection: 'Rol Seçimi',
+    continueBtn: 'Devam Et',
+    loginBtn: 'Giriş Yap',
+    backBtn: '← Geri Dön',
+    username: 'Kullanıcı Adı',
+    password: 'Şifre',
+    usernamePlaceholder: 'Kullanıcı adı girin',
+    passwordPlaceholder: 'Şifre girin',
+    loginError: 'Kullanıcı adı veya şifre hatalı!',
+    adminLogin: 'Yönetici Girişi',
+    waiterLogin: 'Garson Girişi',
+    kitchenLogin: 'Mutfak Girişi',
+    enterCredentials: 'Devam etmek için bilgilerinizi girin',
+
+    // Roles
+    roleCustomer: 'Müşteri',
+    roleAdmin: 'Restoran Yönetici',
+    roleWaiter: 'Garson',
+    roleKitchen: 'Mutfak',
+    roleCustomerDesc: 'Sipariş vermek için',
+    roleAdminDesc: 'Tam yönetim erişimi',
+    roleWaiterDesc: 'Sipariş yönetimi',
+    roleKitchenDesc: 'Sipariş hazırlama',
+
+    // Products / Menu
+    allCategories: 'Tüm Kategoriler',
+    addToCart: 'Sepete Ekle',
+    searchProducts: 'Ürün ara...',
+    noProductsFound: 'Ürün bulunamadı',
+    categories: 'Kategoriler',
+    products: 'Ürünler',
+    itemCount: 'ürün',
+
+    // ProductsPage
+    ourMenu: 'Menümüz',
+    selectCategoryToOrder: 'Kategori seçerek siparişinizi oluşturun',
+    selectSubcategory: 'Alt kategori seçin',
+    subCategories: 'alt kategori',
+    noProductsInCategory: 'Henüz Ürün Eklenmemiş',
+    noProductsInCategoryMsg: 'Bu kategoride henüz ürün bulunmamaktadır.',
+    backToCategories: '← Kategorilere Dön',
+    menuLoading: 'Menü yükleniyor...',
+    menuLoadFailed: 'Menü Yüklenemedi',
+    tryAgain: 'Tekrar Dene',
+    goBackShort: '← Geri',
+
+    // Cart
+    tableOrder: 'Masa Siparişi',
+    emptyCart: 'Sepetiniz Boş',
+    emptyCartMsg: 'Henüz sepetinize ürün eklemediniz.',
+    goToMenu: 'Menüye Dön',
+    createOrder: 'Sipariş Oluştur',
+    subtotal: 'Ara Toplam',
+    total: 'Toplam',
+    decrease: 'Azalt',
+    increase: 'Artır',
+    remove: 'Sil',
+
+    // Checkout
+    orderConfirmation: 'Sipariş Onayı',
+    tableInfo: 'Masa Bilgileri',
+    tableNumber: 'Masa Numarası',
+    tableNumberRequired: 'Masa Numarası *',
+    noteOptional: 'Not (Opsiyonel)',
+    notePlaceholder: 'Özel istek veya not...',
+    processing: 'İşleniyor...',
+    tablesLoading: 'Masalar yükleniyor...',
+    noTablesAvailable: 'Henüz masa tanımlanmamış. Lütfen yöneticiye başvurun.',
+    table: 'Masa',
+    orderSuccess: '✅ Siparişiniz alındı, hazırlanma aşamasında!',
+    orderError: '❌ Sipariş oluşturulamadı. Lütfen tekrar deneyin.',
+
+    // Orders
+    myOrders: 'Siparişlerim',
+    noOrdersYet: 'Henüz Sipariş Yok',
+    noOrdersMsg: 'Henüz hiç siparişiniz bulunmamaktadır.',
+    startShopping: 'Alışverişe Başla',
+    orderNotFound: 'Sipariş Bulunamadı',
+    backToOrders: '← Siparişlere Dön',
+    orderDetails: 'Sipariş Detayları',
+    paymentSummary: 'Ödeme Özeti',
+    tableNumberLabel: 'Masa Numarası:',
+    waiterLabel: 'Garson:',
+    noteLabel: 'Not:',
+
+    // Status
+    statusPreparing: '👨‍🍳 Hazırlanıyor',
+    statusReady: '✅ Hazır',
+    statusDelivered: '🚀 Teslim Edildi',
+    statusCourierDelivered: '🏍️ Kuryeye Teslim',
+    statusPaid: '✓ Ödendi',
+    statusCancelled: '✕ İptal',
+
+    // Kitchen
+    kitchenOrders: '👨‍🍳 Mutfak Siparişleri',
+    orderCount: 'Sipariş',
+    allOrdersReady: 'Tüm siparişler hazırlandı!',
+    readyBtn: '✓ Hazır',
+    waiter: 'Garson',
+    courierDelivery: '🛵 Kurye ile teslim',
+    justNow: 'Az önce',
+    minutes: 'dakika',
+    hours: 'saat',
+
+    // Waiter
+    waiterOrders: '🧑‍🍳 Garson Siparişleri',
+    readyOrders: 'Hazır Siparişler',
+    activeOrders: 'Aktif Siparişler',
+    deliveredOrders: 'Teslim Edilenler',
+    noReadyOrders: 'Hazır sipariş bulunmuyor.',
+    noActiveOrders: 'Aktif sipariş bulunmuyor.',
+    noDeliveredOrders: 'Teslim edilmiş sipariş yok.',
+    markDelivered: '✓ Teslim Edildi',
+    markCourierDelivered: '🛵 Kuryeye Teslim',
+    markPaid: '💰 Ödendi',
+    restaurant: 'Restoran',
+
+    // Order ready notification
+    orderReady: '🎉 Siparişiniz hazır!',
+
+    // Admin tabs (only key labels)
+    adminOrders: '📋 Siparişler',
+    adminMenu: '🍽️ Menü',
+    adminTables: '🪑 Masalar',
+    adminWaiters: '👨‍🍳 Garsonlar',
+    adminReports: '📊 Raporlar',
+    adminCashier: '💰 Kasa',
+    adminThirdParty: '📱 Dış Sipariş',
+};
+
+export type TranslationKeys = keyof typeof tr;
+export type Translations = Record<TranslationKeys, string>;
+
+// Category name translations (Turkish → target language)
+export const trCategoryNames: Record<string, string> = {
+    'İçecekler': 'İçecekler',
+    'Kahvaltı': 'Kahvaltı',
+    'Ana Yemek': 'Ana Yemek',
+    'Tatlılar': 'Tatlılar',
+    'Kahveler': 'Kahveler',
+    'Sıcak Kahveler': 'Sıcak Kahveler',
+    'Soğuk Kahveler': 'Soğuk Kahveler',
+    'Burgerler': 'Burgerler',
+    'Pizzalar': 'Pizzalar',
+    'Salatalar': 'Salatalar',
+    'Çorbalar': 'Çorbalar',
+    'Başlangıçlar': 'Başlangıçlar',
+    'Izgara': 'Izgara',
+    'Makarnalar': 'Makarnalar',
+    'Sandviçler': 'Sandviçler',
+    'Aperatifler': 'Aperatifler',
+    'Diğer': 'Diğer',
+};

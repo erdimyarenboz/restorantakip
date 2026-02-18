@@ -4,6 +4,7 @@ import { ToastProvider } from './store/ToastContext';
 import { CartProvider } from './store/CartContext';
 import { OrdersProvider } from './store/OrdersContext';
 import { MenuProvider } from './store/MenuContext';
+import { LanguageProvider } from './i18n/i18n';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import ToastContainer from './components/ToastContainer';
@@ -182,17 +183,19 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <MenuProvider>
-            <CartProvider>
-              <OrdersProvider>
-                <AppRoutes />
-              </OrdersProvider>
-            </CartProvider>
-          </MenuProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <MenuProvider>
+              <CartProvider>
+                <OrdersProvider>
+                  <AppRoutes />
+                </OrdersProvider>
+              </CartProvider>
+            </MenuProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

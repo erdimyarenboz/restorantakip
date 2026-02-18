@@ -109,6 +109,35 @@
     flex-shrink: 0;
 }
 
+.langSelector {
+    display: flex;
+    gap: 2px;
+    margin-right: var(--spacing-xs);
+}
+
+.langBtn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: all 0.2s;
+    opacity: 0.5;
+}
+
+.langBtn:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.langActive {
+    opacity: 1;
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.12);
+}
+
 .adminNav {
     display: flex;
     gap: var(--spacing-sm);

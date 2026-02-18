@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrders } from '../store/OrdersContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency, formatDate } from '../utils/format';
 import styles from '../styles/OrderDetailPage.module.css';
 
@@ -14,15 +15,16 @@ export default function OrderDetailPage() {
     const { orderId } = useParams<{ orderId: string }>();
     const navigate = useNavigate();
     const { getOrderById } = useOrders();
+    const { t } = useLanguage();
 
     const order = orderId ? getOrderById(orderId) : undefined;
 
     if (!order) {
         return (
             <div className={styles.page}>
-                <h1 className={styles.title}>Sipariş Bulunamadı</h1>
+                <h1 className={styles.title}>{t('orderNotFound')}</h1>
                 <button onClick={() => navigate('/orders')} className={styles.backButton}>
-                    ← Siparişlere Dön
+                    {t('backToOrders')}
                 </button>
             </div>
         );
@@ -33,11 +35,11 @@ export default function OrderDetailPage() {
     return (
         <div className={styles.page}>
             <button onClick={() => navigate('/orders')} className={styles.backButton}>
-                ← Siparişlere Dön
+                {t('backToOrders')}
             </button>
 
             <div className={styles.header}>
-                <h1 className={styles.title}>Sipariş #{order.orderId}</h1>
+                <h1 className={styles.title}>{t('order')} #{order.orderId}</h1>
                 <span className={`${styles.status} ${styles[statusColor]}`}>
                     {order.status}
                 </span>
@@ -46,18 +48,18 @@ export default function OrderDetailPage() {
             <div className={styles.date}>{formatDate(order.createdAt)}</div>
 
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Masa Bilgileri</h2>
+                <h2 className={styles.sectionTitle}>{t('tableInfo')}</h2>
                 <div className={styles.info}>
-                    <p><strong>Masa Numarası:</strong> {order.table.tableNumber}</p>
-                    <p><strong>Garson:</strong> {order.table.waiterName}</p>
+                    <p><strong>{t('tableNumberLabel')}</strong> {order.table.tableNumber}</p>
+                    <p><strong>{t('waiterLabel')}</strong> {order.table.waiterName}</p>
                     {order.table.note && (
-                        <p><strong>Not:</strong> {order.table.note}</p>
+                        <p><strong>{t('noteLabel')}</strong> {order.table.note}</p>
                     )}
                 </div>
             </section>
 
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Sipariş Detayları</h2>
+                <h2 className={styles.sectionTitle}>{t('orderDetails')}</h2>
                 <div className={styles.items}>
                     {order.items.map((item) => (
                         <div key={item.id} className={styles.item}>
@@ -73,14 +75,14 @@ export default function OrderDetailPage() {
             </section>
 
             <section className={styles.section}>
-                <h2 className={styles.sectionTitle}>Ödeme Özeti</h2>
+                <h2 className={styles.sectionTitle}>{t('paymentSummary')}</h2>
                 <div className={styles.totals}>
                     <div className={styles.totalRow}>
-                        <span>Ara Toplam:</span>
+                        <span>{t('subtotal')}:</span>
                         <span>{formatCurrency(order.totals.subtotal)}</span>
                     </div>
                     <div className={`${styles.totalRow} ${styles.grandTotal}`}>
-                        <span>Toplam:</span>
+                        <span>{t('total')}:</span>
                         <span>{formatCurrency(order.totals.total)}</span>
                     </div>
                 </div>

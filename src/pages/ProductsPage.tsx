@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useMenu } from '../store/MenuContext';
+import { useLanguage } from '../i18n/i18n';
 import ProductCard from '../components/ProductCard';
 import EmptyState from '../components/EmptyState';
 import styles from '../styles/ProductsPage.module.css';
@@ -51,9 +52,10 @@ interface BreadcrumbItem {
 
 export default function ProductsPage() {
     const { categories, menuItems, loading, error } = useMenu();
+    const { t, tc } = useLanguage();
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([
-        { label: 'Menü', categoryId: null },
+        { label: t('menu'), categoryId: null },
     ]);
 
     // Subcategory mappings — child category names to their parent
@@ -141,11 +143,11 @@ export default function ProductsPage() {
         if (card.subcategories && card.subcategories.length > 0) {
             // Show subcategories
             setSelectedCategoryId(card.id);
-            setBreadcrumbs(prev => [...prev, { label: card.name, categoryId: card.id }]);
+            setBreadcrumbs(prev => [...prev, { label: tc(card.name), categoryId: card.id }]);
         } else {
             // Show products directly
             setSelectedCategoryId(card.id);
-            setBreadcrumbs(prev => [...prev, { label: card.name, categoryId: card.id }]);
+            setBreadcrumbs(prev => [...prev, { label: tc(card.name), categoryId: card.id }]);
         }
     };
 
@@ -170,7 +172,7 @@ export default function ProductsPage() {
             <div className={styles.page}>
                 <div className={styles.loadingContainer}>
                     <div className={styles.loadingSpinner}></div>
-                    <p>Menü yükleniyor...</p>
+                    <p>{t('menuLoading')}</p>
                 </div>
             </div>
         );
@@ -181,9 +183,9 @@ export default function ProductsPage() {
             <div className={styles.page}>
                 <EmptyState
                     icon="❌"
-                    title="Menü Yüklenemedi"
+                    title={t('menuLoadFailed')}
                     message={error}
-                    actionLabel="Tekrar Dene"
+                    actionLabel={t('tryAgain')}
                     onAction={() => window.location.reload()}
                 />
             </div>
@@ -201,7 +203,7 @@ export default function ProductsPage() {
             {breadcrumbs.length > 1 && (
                 <div className={styles.breadcrumbs}>
                     <button className={styles.backButton} onClick={handleGoBack}>
-                        ← Geri
+                        {t('goBackShort')}
                     </button>
                     <div className={styles.breadcrumbTrail}>
                         {breadcrumbs.map((item, index) => (
@@ -224,9 +226,9 @@ export default function ProductsPage() {
                 <>
                     <h1 className={styles.pageTitle}>
                         <span className={styles.titleEmoji}>📋</span>
-                        Menümüz
+                        {t('ourMenu')}
                     </h1>
-                    <p className={styles.pageSubtitle}>Kategori seçerek siparişinizi oluşturun</p>
+                    <p className={styles.pageSubtitle}>{t('selectCategoryToOrder')}</p>
                     <div className={styles.categoryGrid}>
                         {categoryCards.map((card) => (
                             <button
@@ -239,9 +241,9 @@ export default function ProductsPage() {
                                     <img src={card.image} alt={card.name} className={styles.categoryImage} />
                                 )}
                                 <div className={styles.categoryOverlay} style={card.image ? {} : { background: 'transparent' }}>
-                                    <span className={styles.categoryName}>{card.name}</span>
+                                    <span className={styles.categoryName}>{tc(card.name)}</span>
                                     {card.subcategories && (
-                                        <span className={styles.categoryBadge}>{card.subcategories.length} alt kategori</span>
+                                        <span className={styles.categoryBadge}>{card.subcategories.length} {t('subCategories')}</span>
                                     )}
                                 </div>
                             </button>
@@ -254,9 +256,9 @@ export default function ProductsPage() {
             {showSubcategories && currentSubcategories && (
                 <>
                     <h2 className={styles.sectionTitle}>
-                        {categoryCards.find(c => c.id === selectedCategoryId)?.name}
+                        {tc(categoryCards.find(c => c.id === selectedCategoryId)?.name || '')}
                     </h2>
-                    <p className={styles.pageSubtitle}>Alt kategori seçin</p>
+                    <p className={styles.pageSubtitle}>{t('selectSubcategory')}</p>
                     <div className={styles.categoryGrid}>
                         {currentSubcategories.map((sub) => (
                             <button
@@ -269,7 +271,7 @@ export default function ProductsPage() {
                                     <img src={sub.image} alt={sub.name} className={styles.categoryImage} />
                                 )}
                                 <div className={styles.categoryOverlay} style={sub.image ? {} : { background: 'transparent' }}>
-                                    <span className={styles.categoryName}>{sub.name}</span>
+                                    <span className={styles.categoryName}>{tc(sub.name)}</span>
                                 </div>
                             </button>
                         ))}
@@ -286,9 +288,9 @@ export default function ProductsPage() {
                     {categoryProducts.length === 0 ? (
                         <EmptyState
                             icon="🍽️"
-                            title="Henüz Ürün Eklenmemiş"
-                            message="Bu kategoride henüz ürün bulunmamaktadır."
-                            actionLabel="← Kategorilere Dön"
+                            title={t('noProductsInCategory')}
+                            message={t('noProductsInCategoryMsg')}
+                            actionLabel={t('backToCategories')}
                             onAction={handleGoBack}
                         />
                     ) : (

@@ -1,5 +1,6 @@
 import type { CartItem as CartItemType } from '../types';
 import { useCart } from '../store/CartContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency } from '../utils/format';
 import styles from '../styles/CartItem.module.css';
 
@@ -9,6 +10,7 @@ interface CartItemProps {
 
 export default function CartItem({ item }: CartItemProps) {
     const { updateQuantity, removeItem } = useCart();
+    const { t } = useLanguage();
 
     const handleDecrease = () => {
         updateQuantity(item.product.id, item.quantity - 1);
@@ -40,7 +42,7 @@ export default function CartItem({ item }: CartItemProps) {
                     <button
                         onClick={handleDecrease}
                         className={styles.quantityButton}
-                        aria-label="Azalt"
+                        aria-label={t('decrease')}
                     >
                         -
                     </button>
@@ -48,7 +50,7 @@ export default function CartItem({ item }: CartItemProps) {
                     <button
                         onClick={handleIncrease}
                         className={styles.quantityButton}
-                        aria-label="Artır"
+                        aria-label={t('increase')}
                     >
                         +
                     </button>
@@ -57,7 +59,7 @@ export default function CartItem({ item }: CartItemProps) {
                 <button
                     onClick={handleRemove}
                     className={styles.removeButton}
-                    aria-label="Sil"
+                    aria-label={t('remove')}
                 >
                     🗑️
                 </button>

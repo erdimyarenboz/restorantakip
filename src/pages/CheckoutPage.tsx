@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../store/CartContext';
 import { useOrders } from '../store/OrdersContext';
 import { useToast } from '../store/ToastContext';
+import { useLanguage } from '../i18n/i18n';
 import { tablesAPI } from '../services/api';
 import CartSummary from '../components/CartSummary';
 import type { TableOrder } from '../types';
@@ -20,6 +21,7 @@ export default function CheckoutPage() {
     const { items, subtotal, total, clearCart } = useCart();
     const { createOrder } = useOrders();
     const { showToast } = useToast();
+    const { t } = useLanguage();
 
     const [tables, setTables] = useState<TableItem[]>([]);
     const [tablesLoading, setTablesLoading] = useState(true);
@@ -73,11 +75,11 @@ export default function CheckoutPage() {
         try {
             const order = await createOrder(formData, items, { subtotal, total });
             clearCart();
-            showToast('✅ Siparişiniz alındı, hazırlanma aşamasında!', 'success');
+            showToast(t('orderSuccess'), 'success');
             navigate(`/orders/${order.orderId}`);
         } catch (error) {
             console.error('Order creation failed:', error);
-            showToast('❌ Sipariş oluşturulamadı. Lütfen tekrar deneyin.', 'error');
+            showToast(t('orderError'), 'error');
             setIsSubmitting(false);
         }
     };
@@ -85,19 +87,19 @@ export default function CheckoutPage() {
 
     return (
         <div className={styles.page}>
-            <h1 className={styles.title}>Sipariş Onayı</h1>
+            <h1 className={styles.title}>{t('orderConfirmation')}</h1>
 
             <form onSubmit={handleSubmit} className={styles.form}>
-                <h2 className={styles.sectionTitle}>Masa Bilgileri</h2>
+                <h2 className={styles.sectionTitle}>{t('tableInfo')}</h2>
 
                 <div className={styles.field}>
                     <label htmlFor="tableNumber" className={styles.label}>
-                        Masa Numarası *
+                        {t('tableNumberRequired')}
                     </label>
                     {tablesLoading ? (
-                        <div style={{ padding: '0.5rem', color: 'var(--color-text-secondary)' }}>⏳ Masalar yükleniyor...</div>
+                        <div style={{ padding: '0.5rem', color: 'var(--color-text-secondary)' }}>⏳ {t('tablesLoading')}</div>
                     ) : tables.length === 0 ? (
-                        <div style={{ padding: '0.5rem', color: '#EF4444' }}>Henüz masa tanımlanmamış. Lütfen yöneticiye başvurun.</div>
+                        <div style={{ padding: '0.5rem', color: '#EF4444' }}>{t('noTablesAvailable')}</div>
                     ) : (
                         <select
                             id="tableNumber"
@@ -108,9 +110,9 @@ export default function CheckoutPage() {
                             className={styles.select}
                             disabled={isSubmitting}
                         >
-                            {tables.map((t) => (
-                                <option key={t.id} value={t.table_number}>
-                                    Masa {t.table_number}
+                            {tables.map((tbl) => (
+                                <option key={tbl.id} value={tbl.table_number}>
+                                    {t('table')} {tbl.table_number}
                                 </option>
                             ))}
                         </select>
@@ -119,13 +121,13 @@ export default function CheckoutPage() {
 
                 <div className={styles.field}>
                     <label htmlFor="note" className={styles.label}>
-                        Not (Opsiyonel)
+                        {t('noteOptional')}
                     </label>
                     <textarea
                         id="note"
                         value={formData.note}
                         onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                        placeholder="Özel istek veya not..."
+                        placeholder={t('notePlaceholder')}
                         className={styles.textarea}
                         rows={3}
                         disabled={isSubmitting}
@@ -135,11 +137,10 @@ export default function CheckoutPage() {
                 <CartSummary
                     subtotal={subtotal}
                     total={total}
-                    checkoutLabel={isSubmitting ? 'İşleniyor...' : 'Sipariş Oluştur'}
+                    checkoutLabel={isSubmitting ? t('processing') : t('createOrder')}
                     checkoutDisabled={isSubmitting || tables.length === 0}
                 />
             </form>
         </div>
     );
 }
-

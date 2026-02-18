@@ -1,4 +1,5 @@
 import { useOrders } from '../store/OrdersContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency, formatDate } from '../utils/format';
 import type { Order, OrderSource } from '../types';
 import styles from '../styles/WaiterPage.module.css';
@@ -12,6 +13,7 @@ const SOURCE_CONFIG: Record<OrderSource, { label: string; emoji: string }> = {
 
 export default function WaiterPage() {
     const { orders, updateOrderStatus } = useOrders();
+    const { t } = useLanguage();
 
     const handleMarkDelivered = (order: Order) => {
         const isThirdParty = order.source !== 'restaurant';
@@ -38,15 +40,14 @@ export default function WaiterPage() {
     return (
         <div className={styles.page}>
             <div className={styles.header}>
-                <h1 className={styles.title}>🍴 Garson Siparişleri</h1>
-                <div className={styles.badge}>{activeOrders.length} Sipariş</div>
+                <h1 className={styles.title}>{t('waiterOrders')}</h1>
+                <div className={styles.badge}>{activeOrders.length} {t('orderCount')}</div>
             </div>
 
             {activeOrders.length === 0 ? (
                 <div className={styles.empty}>
                     <div className={styles.emptyIcon}>📝</div>
-                    <p className={styles.emptyText}>Henüz sipariş yok</p>
-                    <p className={styles.emptySubtext}>Siparişler burada görünecek</p>
+                    <p className={styles.emptyText}>{t('noReadyOrders')}</p>
                 </div>
             ) : (
                 <>
@@ -54,8 +55,8 @@ export default function WaiterPage() {
                     {courierOrders.length > 0 && (
                         <div className={styles.courierSection}>
                             <div className={styles.courierHeader}>
-                                <span className={styles.courierTitle}>🛵 Kurye Siparişleri</span>
-                                <span className={styles.courierCount}>{courierOrders.length} sipariş</span>
+                                <span className={styles.courierTitle}>🛵 {t('courierDelivery')}</span>
+                                <span className={styles.courierCount}>{courierOrders.length} {t('orderCount')}</span>
                             </div>
                             <div className={styles.courierGrid}>
                                 {courierOrders.map((order) => {
@@ -70,7 +71,7 @@ export default function WaiterPage() {
                                                     <span className={styles.orderId}>#{order.orderId}</span>
                                                 </div>
                                                 <span className={`${styles.statusBadge} ${order.status === 'Hazır' ? styles.statusReady : styles.statusKitchen}`}>
-                                                    {order.status === 'Hazır' ? '✅ Hazır' : '🍳 Mutfakta'}
+                                                    {order.status === 'Hazır' ? t('statusReady') : t('statusPreparing')}
                                                 </span>
                                             </div>
 
@@ -98,7 +99,7 @@ export default function WaiterPage() {
                                                         className={styles.courierButton}
                                                         onClick={() => handleMarkDelivered(order)}
                                                     >
-                                                        🛵 Kuryeye Teslim Edildi
+                                                        {t('markCourierDelivered')}
                                                     </button>
                                                 )}
                                             </div>
@@ -116,8 +117,8 @@ export default function WaiterPage() {
                             .map(([tableNum, tableOrders]) => (
                                 <div key={tableNum} className={styles.tableGroup}>
                                     <div className={styles.tableHeader}>
-                                        <span className={styles.tableBadge}>Masa {tableNum}</span>
-                                        <span className={styles.tableCount}>{tableOrders.length} sipariş</span>
+                                        <span className={styles.tableBadge}>{t('table')} {tableNum}</span>
+                                        <span className={styles.tableCount}>{tableOrders.length} {t('orderCount')}</span>
                                     </div>
 
                                     {tableOrders.map((order) => (
@@ -125,13 +126,13 @@ export default function WaiterPage() {
                                             <div className={styles.orderHeader}>
                                                 <span className={styles.orderId}>#{order.orderId}</span>
                                                 <span className={`${styles.statusBadge} ${order.status === 'Hazır' ? styles.statusReady : styles.statusKitchen}`}>
-                                                    {order.status === 'Hazır' ? '✅ Hazır' : '🍳 Mutfakta'}
+                                                    {order.status === 'Hazır' ? t('statusReady') : t('statusPreparing')}
                                                 </span>
                                             </div>
 
                                             <div className={styles.orderMeta}>
                                                 <span className={styles.orderTime}>{formatDate(order.createdAt)}</span>
-                                                <span className={styles.waiter}>Garson: <strong>{order.table.waiterName}</strong></span>
+                                                <span className={styles.waiter}>{t('waiter')}: <strong>{order.table.waiterName}</strong></span>
                                             </div>
 
                                             <div className={styles.items}>
@@ -158,10 +159,10 @@ export default function WaiterPage() {
                                                         className={styles.deliverButton}
                                                         onClick={() => handleMarkDelivered(order)}
                                                     >
-                                                        ✓ Teslim Edildi
+                                                        {t('markDelivered')}
                                                     </button>
                                                 ) : (
-                                                    <span className={styles.waitingLabel}>⏳ Hazırlanıyor...</span>
+                                                    <span className={styles.waitingLabel}>⏳ {t('statusPreparing')}...</span>
                                                 )}
                                             </div>
                                         </div>

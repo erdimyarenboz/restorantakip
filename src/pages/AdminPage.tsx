@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOrders } from '../store/OrdersContext';
 import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency, formatDate } from '../utils/format';
 import { tablesAPI, waitersAPI, reportAPI, menuAPI } from '../services/api';
 import { getStorageItem, setStorageItem } from '../utils/storage';
@@ -124,6 +125,7 @@ export default function AdminPage() {
     const { getTablePaymentSummary, updateOrderStatus, clearPaidOrders, orders, createThirdPartyOrder } = useOrders();
     const { role } = useAuth();
     const { showToast } = useToast();
+    const { t } = useLanguage();
     const isSuperAdmin = role === 'super_admin';
 
     // Tab state
@@ -629,22 +631,22 @@ export default function AdminPage() {
             {/* Tab Navigation */}
             < div className={styles.tabNav} >
                 <button className={`${styles.tabBtn} ${activeTab === 'kasa' ? styles.tabActive : ''}`} onClick={() => setActiveTab('kasa')}>
-                    💰 Kasa
+                    {t('adminCashier')}
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'raporlar' ? styles.tabActive : ''}`} onClick={() => setActiveTab('raporlar')}>
-                    📊 Raporlar
+                    {t('adminReports')}
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'masalar' ? styles.tabActive : ''}`} onClick={() => setActiveTab('masalar')}>
-                    🪑 Masalar
+                    {t('adminTables')}
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'garsonlar' ? styles.tabActive : ''}`} onClick={() => setActiveTab('garsonlar')}>
-                    👨‍🍳 Garsonlar
+                    {t('adminWaiters')}
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'dis_siparis' ? styles.tabActive : ''}`} onClick={() => setActiveTab('dis_siparis')}>
-                    📦 Dış Sipariş
+                    {t('adminThirdParty')}
                 </button>
                 <button className={`${styles.tabBtn} ${activeTab === 'menu' ? styles.tabActive : ''}`} onClick={() => setActiveTab('menu')}>
-                    🍽️ Menü
+                    {t('adminMenu')}
                 </button>
             </div >
 

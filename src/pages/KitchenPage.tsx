@@ -1,4 +1,5 @@
 import { useOrders } from '../store/OrdersContext';
+import { useLanguage } from '../i18n/i18n';
 import { formatCurrency } from '../utils/format';
 import type { OrderSource } from '../types';
 import styles from '../styles/KitchenPage.module.css';
@@ -12,6 +13,7 @@ const SOURCE_CONFIG: Record<OrderSource, { label: string; emoji: string; classNa
 
 export default function KitchenPage() {
     const { getKitchenOrders, updateOrderStatus } = useOrders();
+    const { t } = useLanguage();
     const kitchenOrders = getKitchenOrders();
 
     const handleMarkReady = (orderId: string) => {
@@ -23,11 +25,11 @@ export default function KitchenPage() {
         const orderTime = new Date(createdAt);
         const diffMinutes = Math.floor((now.getTime() - orderTime.getTime()) / 1000 / 60);
 
-        if (diffMinutes < 1) return 'Az önce';
-        if (diffMinutes < 60) return `${diffMinutes} dakika`;
+        if (diffMinutes < 1) return t('justNow');
+        if (diffMinutes < 60) return `${diffMinutes} ${t('minutes')}`;
         const hours = Math.floor(diffMinutes / 60);
         const mins = diffMinutes % 60;
-        return `${hours} saat ${mins} dakika`;
+        return `${hours} ${t('hours')} ${mins} ${t('minutes')}`;
     };
 
     const isThirdParty = (source: OrderSource) => source !== 'restaurant';
@@ -35,14 +37,14 @@ export default function KitchenPage() {
     return (
         <div className={styles.page}>
             <div className={styles.header}>
-                <h1 className={styles.title}>👨‍🍳 Mutfak Siparişleri</h1>
-                <div className={styles.badge}>{kitchenOrders.length} Sipariş</div>
+                <h1 className={styles.title}>{t('kitchenOrders')}</h1>
+                <div className={styles.badge}>{kitchenOrders.length} {t('orderCount')}</div>
             </div>
 
             {kitchenOrders.length === 0 ? (
                 <div className={styles.empty}>
                     <div className={styles.emptyIcon}>✅</div>
-                    <p className={styles.emptyText}>Tüm siparişler hazırlandı!</p>
+                    <p className={styles.emptyText}>{t('allOrdersReady')}</p>
                 </div>
             ) : (
                 <div className={styles.orders}>
@@ -63,7 +65,7 @@ export default function KitchenPage() {
                                             </span>
                                         ) : (
                                             <span className={styles.tableBadge}>
-                                                Masa {order.table.tableNumber}
+                                                {t('table')} {order.table.tableNumber}
                                             </span>
                                         )}
                                         <span className={styles.orderId}>#{order.orderId}</span>
@@ -77,12 +79,12 @@ export default function KitchenPage() {
 
                                 {!thirdParty && (
                                     <div className={styles.waiter}>
-                                        Garson: <strong>{order.table.waiterName}</strong>
+                                        {t('waiter')}: <strong>{order.table.waiterName}</strong>
                                     </div>
                                 )}
                                 {thirdParty && (
                                     <div className={styles.courierTag}>
-                                        🛵 Kurye ile teslim
+                                        {t('courierDelivery')}
                                     </div>
                                 )}
 
@@ -109,7 +111,7 @@ export default function KitchenPage() {
                                         className={styles.readyButton}
                                         onClick={() => handleMarkReady(order.orderId)}
                                     >
-                                        ✓ Hazır
+                                        {t('readyBtn')}
                                     </button>
                                 </div>
                             </div>
