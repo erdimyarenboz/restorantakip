@@ -52,7 +52,7 @@ export default function LoginPage() {
         const role = roles.find(r => r.id === selectedRole)!;
 
         if (username === role.demoUsername && password === role.demoPassword) {
-            login('admin');
+            login(selectedRole);
             if (selectedRole === 'admin') navigate('/admin');
             if (selectedRole === 'waiter') navigate('/waiter');
             if (selectedRole === 'kitchen') navigate('/kitchen');

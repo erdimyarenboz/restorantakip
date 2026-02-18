@@ -4,7 +4,7 @@ import { getStorageItem, setStorageItem } from '../utils/storage';
 
 const AUTH_STORAGE_KEY = 'user_role_v1';
 
-export type UserRole = 'admin' | 'customer' | 'super_admin';
+export type UserRole = 'admin' | 'customer' | 'waiter' | 'kitchen' | 'super_admin';
 
 interface AuthContextType {
     role: UserRole | null;

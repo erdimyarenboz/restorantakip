@@ -12,13 +12,13 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
     const { itemCount } = useCart();
     const { role, logout } = useAuth();
     const location = useLocation();
-    const isAdminLike = role === 'admin' || role === 'super_admin';
+    const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
     const showSearch = location.pathname === '/' && role === 'customer';
 
     return (
         <header className={styles.header}>
             <div className={styles.container}>
-                <Link to={isAdminLike ? '/kitchen' : '/'} className={styles.logo}>
+                <Link to={isStaff ? '/kitchen' : '/'} className={styles.logo}>
                     🍽️ Restoran Sipariş
                 </Link>
 
@@ -36,7 +36,7 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
                 )}
 
                 <div className={styles.rightSection}>
-                    {isAdminLike && (
+                    {isStaff && (
                         <nav className={styles.adminNav}>
                             <NavLink
                                 to="/kitchen"
@@ -54,14 +54,16 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
                             >
                                 🍴 Garson
                             </NavLink>
-                            <NavLink
-                                to="/admin"
-                                className={({ isActive }) =>
-                                    `${styles.adminLink} ${isActive ? styles.active : ''}`
-                                }
-                            >
-                                💰 Kasa
-                            </NavLink>
+                            {role === 'admin' && (
+                                <NavLink
+                                    to="/admin"
+                                    className={({ isActive }) =>
+                                        `${styles.adminLink} ${isActive ? styles.active : ''}`
+                                    }
+                                >
+                                    💰 Kasa
+                                </NavLink>
+                            )}
                             <button onClick={logout} className={styles.logoutButton}>
                                 🚪 Çıkış
                             </button>

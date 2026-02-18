@@ -24,10 +24,10 @@ import './styles/global.css';
 // Protected route wrapper
 function ProtectedRoute({
   children,
-  allowedRole,
+  allowedRoles,
 }: {
   children: React.ReactElement;
-  allowedRole?: 'admin' | 'customer';
+  allowedRoles?: Array<'admin' | 'customer' | 'waiter' | 'kitchen' | 'super_admin'>;
 }) {
   const { role, isAuthenticated } = useAuth();
 
@@ -38,9 +38,10 @@ function ProtectedRoute({
   // super_admin can access admin routes
   const effectiveRole = role === 'super_admin' ? 'admin' : role;
 
-  if (allowedRole && effectiveRole !== allowedRole) {
+  if (allowedRoles && effectiveRole && !allowedRoles.includes(effectiveRole)) {
     // Redirect to appropriate home based on role
-    return <Navigate to={effectiveRole === 'admin' ? '/kitchen' : '/'} replace />;
+    const staffRoles = ['admin', 'waiter', 'kitchen'];
+    return <Navigate to={staffRoles.includes(effectiveRole) ? '/kitchen' : '/'} replace />;
   }
 
   return children;
@@ -48,7 +49,7 @@ function ProtectedRoute({
 
 function AppRoutes() {
   const { isAuthenticated, role } = useAuth();
-  const isAdminLike = role === 'admin' || role === 'super_admin';
+  const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
   const isSuperAdmin = role === 'super_admin';
 
   return (
@@ -62,7 +63,7 @@ function AppRoutes() {
             path="/login"
             element={
               isAuthenticated ? (
-                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isAdminLike ? '/kitchen' : '/')} replace />
+                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? '/kitchen' : '/')} replace />
               ) : (
                 <LoginPage />
               )
@@ -85,7 +86,7 @@ function AppRoutes() {
           <Route
             path="/"
             element={
-              <ProtectedRoute allowedRole="customer">
+              <ProtectedRoute allowedRoles={['customer']}>
                 <ProductsPage />
               </ProtectedRoute>
             }
@@ -93,7 +94,7 @@ function AppRoutes() {
           <Route
             path="/cart"
             element={
-              <ProtectedRoute allowedRole="customer">
+              <ProtectedRoute allowedRoles={['customer']}>
                 <CartPage />
               </ProtectedRoute>
             }
@@ -101,7 +102,7 @@ function AppRoutes() {
           <Route
             path="/checkout"
             element={
-              <ProtectedRoute allowedRole="customer">
+              <ProtectedRoute allowedRoles={['customer']}>
                 <CheckoutPage />
               </ProtectedRoute>
             }
@@ -109,7 +110,7 @@ function AppRoutes() {
           <Route
             path="/orders"
             element={
-              <ProtectedRoute allowedRole="customer">
+              <ProtectedRoute allowedRoles={['customer']}>
                 <OrdersPage />
               </ProtectedRoute>
             }
@@ -117,17 +118,17 @@ function AppRoutes() {
           <Route
             path="/orders/:orderId"
             element={
-              <ProtectedRoute allowedRole="customer">
+              <ProtectedRoute allowedRoles={['customer']}>
                 <OrderDetailPage />
               </ProtectedRoute>
             }
           />
 
-          {/* Admin routes */}
+          {/* Staff routes — admin, waiter, kitchen can access */}
           <Route
             path="/kitchen"
             element={
-              <ProtectedRoute allowedRole="admin">
+              <ProtectedRoute allowedRoles={['admin', 'waiter', 'kitchen']}>
                 <KitchenPage />
               </ProtectedRoute>
             }
@@ -135,7 +136,7 @@ function AppRoutes() {
           <Route
             path="/waiter"
             element={
-              <ProtectedRoute allowedRole="admin">
+              <ProtectedRoute allowedRoles={['admin', 'waiter']}>
                 <WaiterPage />
               </ProtectedRoute>
             }
@@ -143,7 +144,7 @@ function AppRoutes() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute allowedRole="admin">
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminPage />
               </ProtectedRoute>
             }
@@ -153,7 +154,7 @@ function AppRoutes() {
           <Route
             path="/platform/dashboard"
             element={
-              <ProtectedRoute allowedRole="admin">
+              <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
                 <PlatformDashboard />
               </ProtectedRoute>
             }
@@ -164,7 +165,7 @@ function AppRoutes() {
             path="*"
             element={
               <Navigate
-                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isAdminLike ? '/kitchen' : '/')) : '/login'}
+                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isStaff ? '/kitchen' : '/')) : '/login'}
                 replace
               />
             }
