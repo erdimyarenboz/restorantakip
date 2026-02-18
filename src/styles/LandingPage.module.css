@@ -681,6 +681,19 @@
     color: var(--landing-text-muted);
 }
 
+.footerAgency {
+    font-size: 0.8rem;
+    color: var(--landing-text-muted);
+}
+
+.footerAgency strong {
+    background: var(--landing-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 900px) {
     .heroTitle {

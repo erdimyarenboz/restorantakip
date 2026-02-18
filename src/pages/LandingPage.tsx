@@ -353,15 +353,16 @@ export default function LandingPage() {
                         <h4 className={styles.footerTitle}>Ürün</h4>
                         <div className={styles.footerLinks}>
                             <button className={styles.footerLink} onClick={() => scrollTo('features')}>Özellikler</button>
-                            <button className={styles.footerLink} onClick={() => scrollTo('pricing')}>Fiyatlandırma</button>
                             <button className={styles.footerLink} onClick={() => scrollTo('integrations')}>Entegrasyonlar</button>
+                            <button className={styles.footerLink} onClick={() => scrollTo('pricing')}>Fiyatlandırma</button>
+                            <button className={styles.footerLink} onClick={() => scrollTo('faq')}>SSS</button>
                         </div>
                     </div>
                     <div>
                         <h4 className={styles.footerTitle}>Destek</h4>
                         <div className={styles.footerLinks}>
                             <a href="mailto:destek@siptakip.com" className={styles.footerLink}>E-posta Destek</a>
-                            <a href="tel:+905001234567" className={styles.footerLink}>Telefon</a>
+                            <a href="tel:+905077605747" className={styles.footerLink}>Telefon</a>
                         </div>
                     </div>
                     <div>
@@ -375,6 +376,7 @@ export default function LandingPage() {
                 </div>
                 <div className={styles.footerBottom}>
                     <p className={styles.footerCopy}>© 2026 SipTakip. Tüm hakları saklıdır.</p>
+                    <p className={styles.footerAgency}>Bir <strong>Newant Agency</strong> yazılımıdır.</p>
                 </div>
             </footer>
 
