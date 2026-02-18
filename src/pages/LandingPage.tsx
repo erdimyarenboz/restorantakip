@@ -319,6 +319,11 @@ export default function LandingPage() {
                             title: 'QR Menü Hediye',
                             desc: 'Kurulum kapsamında restoranınız için tasarlanmış QR menü materyalleri ücretsiz olarak hazırlanır ve teslim edilir.',
                         },
+                        {
+                            icon: '🤖',
+                            title: 'Rezervasyon Chat Botu Hediye',
+                            desc: 'Restoranınız için yapay zeka destekli rezervasyon chat botu ücretsiz kurulur. Müşterileriniz 7/24 otomatik masa rezervasyonu yapabilir.',
+                        },
                     ].map((item, i) => (
                         <div key={i} className={styles.faqItem}>
                             <div className={styles.faqIcon}>{item.icon}</div>
