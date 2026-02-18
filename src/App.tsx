@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './store/AuthContext';
 import { ToastProvider } from './store/ToastContext';
 import { CartProvider } from './store/CartContext';
@@ -51,26 +51,23 @@ function ProtectedRoute({
 
 function AppRoutes() {
   const { isAuthenticated, role } = useAuth();
+  const location = useLocation();
   const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
   const isSuperAdmin = role === 'super_admin';
   const staffHome = role === 'waiter' ? '/waiter' : '/kitchen';
+  const isPublicPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/giris-yonetim-x';
+  const showAppChrome = isAuthenticated && !isSuperAdmin && !isPublicPage;
 
   return (
     <div className="app-container">
-      {isAuthenticated && !isSuperAdmin && <Header />}
+      {showAppChrome && <Header />}
       <OrderStatusNotifier />
       <main className="main-content">
         <Routes>
-          {/* Public landing page */}
+          {/* Public landing page — always visible */}
           <Route
             path="/"
-            element={
-              isAuthenticated ? (
-                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/menu')} replace />
-              ) : (
-                <LandingPage />
-              )
-            }
+            element={<LandingPage />}
           />
 
           {/* Login route */}
@@ -193,7 +190,7 @@ function AppRoutes() {
           />
         </Routes>
       </main>
-      {isAuthenticated && !isSuperAdmin && <BottomNav />}
+      {showAppChrome && <BottomNav />}
       <ToastContainer />
     </div>
   );
