@@ -240,7 +240,7 @@ export default function LandingPage() {
                 </div>
                 <p className={styles.pricingTrial}>🎁 Tüm planlar 14 gün ücretsiz deneme ile başlar</p>
                 <p className={styles.pricingTrial} style={{ marginTop: '8px', fontSize: '0.85rem', opacity: 0.8 }}>
-                    📱 İlk kurulum için QR menü hediye — Ek QR menü basımı adet başı 30,00₺ ücretlendirilir.
+                    🎁 İlk kurulum ücreti bir kereye mahsus 30.000₺ — QR menü hediyedir.
                 </p>
             </section>
 
