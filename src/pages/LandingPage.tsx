@@ -244,6 +244,93 @@ export default function LandingPage() {
                 </p>
             </section>
 
+            {/* ─── FAQ ─── */}
+            <section id="faq" className={styles.section}>
+                <div style={{ textAlign: 'center' }}>
+                    <div className={styles.sectionTag}>❓ Sıkça Sorulan Sorular</div>
+                    <h2 className={styles.sectionTitle} style={{ textAlign: 'center' }}>
+                        Kurulum Ücreti <span className={styles.heroGradient}>Neleri Kapsar?</span>
+                    </h2>
+                    <p className={styles.sectionSubtitle} style={{ margin: '0 auto 48px', textAlign: 'center' }}>
+                        30.000₺'lik kurulum ücreti tek seferlik bir iş değil; restoranınızın canlı operasyonunu açan
+                        kapsamlı bir <strong style={{ color: '#a78bfa' }}>devreye alma projesidir</strong>.
+                    </p>
+                </div>
+
+                <div className={styles.faqGrid}>
+                    {[
+                        {
+                            icon: '🔍',
+                            title: 'İhtiyaç Analizi & Akış Tasarımı',
+                            desc: 'Sipariş akışı, mutfak, kasa, kurye, iptal/iade ve vardiya süreçleriniz analiz edilir ve operasyonunuza özel akışlar netleştirilir.',
+                        },
+                        {
+                            icon: '🔗',
+                            title: 'Pazar Yeri Entegrasyonları',
+                            desc: 'Trendyol Go, Getir, Migros Yemek, Yemek Sepeti gibi platformların kurulum ve eşleştirme işlemleri yapılır.',
+                        },
+                        {
+                            icon: '📦',
+                            title: 'Ürün Eşleştirme (SKU / Varyasyon)',
+                            desc: 'Tüm ürünleriniz platform bazında SKU ve varyasyon eşleştirmesi yapılarak senkronize edilir.',
+                        },
+                        {
+                            icon: '📂',
+                            title: 'Kategori & Menü Mapping',
+                            desc: 'Menünüz tüm kanallarda tutarlı görünmesi için kategori eşleştirmesi ve menü düzenlemesi yapılır.',
+                        },
+                        {
+                            icon: '💰',
+                            title: 'Fiyat, Stok & Seçenek Senkronizasyonu',
+                            desc: 'Fiyat güncellemeleri, stok takibi ve ekstra seçenekler (sos, boy, garnitür) tüm kanallarda otomatik senkronize edilir.',
+                        },
+                        {
+                            icon: '👥',
+                            title: 'Şube, Roller & Yetkilendirme',
+                            desc: 'Şube yapınız, kullanıcı rolleri (yönetici, garson, mutfak, kurye) ve erişim yetkileri tanımlanır.',
+                        },
+                        {
+                            icon: '🖨️',
+                            title: 'Yazıcı, Mutfak Ekranı & Bildirimler',
+                            desc: 'Fiş/adisyon yazıcıları, mutfak ekranları kurulur. Sipariş bildirimleri ve sesli uyarılar yapılandırılır.',
+                        },
+                        {
+                            icon: '💳',
+                            title: 'POS, Ödeme & Cihaz Kurulumu',
+                            desc: 'POS entegrasyonu, ödeme altyapısı, kurye atama sistemi ve gerekli cihazların kurulumu yapılır.',
+                        },
+                        {
+                            icon: '🧪',
+                            title: 'Test & Pilot Gün',
+                            desc: 'Tüm senaryolar test edilir. 1 gün gözetimli pilot açılış yapılarak sistemin sorunsuz çalıştığı doğrulanır.',
+                        },
+                        {
+                            icon: '🎓',
+                            title: 'Eğitim & Dokümantasyon',
+                            desc: 'Ekibinize uygulamalı eğitim verilir. Eğitim dökümanları ve kısa eğitim videoları hazırlanarak teslim edilir.',
+                        },
+                        {
+                            icon: '🛡️',
+                            title: 'Go-Live Sonrası Stabilizasyon Desteği',
+                            desc: 'Canlıya geçişten sonra 7–14 gün boyunca stabilizasyon desteği sağlanır. Hızlı müdahale ile sorunsuz operasyon garanti edilir.',
+                        },
+                        {
+                            icon: '🎁',
+                            title: 'QR Menü Hediye',
+                            desc: 'Kurulum kapsamında restoranınız için tasarlanmış QR menü materyalleri ücretsiz olarak hazırlanır ve teslim edilir.',
+                        },
+                    ].map((item, i) => (
+                        <div key={i} className={styles.faqItem}>
+                            <div className={styles.faqIcon}>{item.icon}</div>
+                            <div>
+                                <div className={styles.faqItemTitle}>{item.title}</div>
+                                <div className={styles.faqItemDesc}>{item.desc}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             {/* ─── Footer ─── */}
             <footer className={styles.footer}>
                 <div className={styles.footerContent}>
