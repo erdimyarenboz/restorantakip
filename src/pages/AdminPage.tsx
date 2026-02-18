@@ -1232,22 +1232,27 @@ export default function AdminPage() {
                                             onChange={async (e) => {
                                                 const file = e.target.files?.[0];
                                                 if (!file) return;
-                                                try {
-                                                    showToast('Logo yükleniyor...', 'info');
-                                                    const reader = new FileReader();
-                                                    reader.onload = async () => {
+                                                showToast('Logo yükleniyor...', 'info');
+                                                const reader = new FileReader();
+                                                reader.onload = async () => {
+                                                    try {
                                                         const base64 = reader.result as string;
-                                                        const uploadRes = await menuAPI.uploadImage(base64, `logo_${selectedRestaurantId}`);
+                                                        // Include file extension in the filename
+                                                        const ext = file.name.split('.').pop() || 'png';
+                                                        const uploadRes = await menuAPI.uploadImage(base64, `logo_${selectedRestaurantId}.${ext}`);
                                                         const logoUrl = uploadRes.data.url;
+                                                        console.log('[Logo] Uploaded URL:', logoUrl);
                                                         await menuAPI.updateRestaurant(selectedRestaurantId, { logo_url: logoUrl });
+                                                        console.log('[Logo] Restaurant updated with logo_url');
                                                         setMenuRestaurants(prev => prev.map(r => r.id === selectedRestaurantId ? { ...r, logo_url: logoUrl } : r));
                                                         await refreshMenu();
                                                         showToast('Logo güncellendi!', 'success');
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                } catch {
-                                                    showToast('Logo yüklenemedi', 'error');
-                                                }
+                                                    } catch (err) {
+                                                        console.error('[Logo] Upload failed:', err);
+                                                        showToast('Logo yüklenemedi', 'error');
+                                                    }
+                                                };
+                                                reader.readAsDataURL(file);
                                                 e.target.value = '';
                                             }}
                                         />
