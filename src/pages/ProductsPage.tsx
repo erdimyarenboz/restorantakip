@@ -145,11 +145,22 @@ export default function ProductsPage() {
         { label: 'Menü', categoryId: null },
     ]);
 
+    // Subcategory mappings — child category names to their parent
+    const SUBCATEGORY_MAP: Record<string, string> = {
+        'Sıcak Kahveler': 'Kahveler',
+        'Soğuk Kahveler': 'Kahveler',
+    };
+
     // Build category cards from API data or fallback
     const categoryCards = useMemo((): CategoryCard[] => {
         if (categories.length === 0) return DEFAULT_CATEGORIES;
 
-        return categories.map((cat) => {
+        // Identify parent → children relationships
+        const childNames = new Set(Object.keys(SUBCATEGORY_MAP));
+        const parentChildMap = new Map<string, CategoryCard[]>();
+
+        // First pass: build all cards
+        const allCards: CategoryCard[] = categories.map((cat) => {
             const visual = CATEGORY_VISUALS[cat.name] || DEFAULT_VISUAL;
             return {
                 id: cat.id,
@@ -159,22 +170,41 @@ export default function ProductsPage() {
                 image: (visual as any).image,
             };
         });
+
+        // Second pass: group children under parents
+        for (const card of allCards) {
+            const parentName = SUBCATEGORY_MAP[card.name];
+            if (parentName) {
+                if (!parentChildMap.has(parentName)) parentChildMap.set(parentName, []);
+                parentChildMap.get(parentName)!.push(card);
+            }
+        }
+
+        // Third pass: build final list — exclude children from top level, attach to parents
+        return allCards
+            .filter(card => !childNames.has(card.name))
+            .map(card => ({
+                ...card,
+                subcategories: parentChildMap.get(card.name) || undefined,
+            }));
     }, [categories]);
 
     // Find if a selected category has subcategories
     const currentSubcategories = useMemo((): CategoryCard[] | null => {
         if (!selectedCategoryId) return null;
 
-        // Check DEFAULT_CATEGORIES for subcategories
+        // Check current categoryCards (works for both API and default)
+        const selectedCard = categoryCards.find(c => c.id === selectedCategoryId);
+        if (selectedCard?.subcategories && selectedCard.subcategories.length > 0) {
+            return selectedCard.subcategories;
+        }
+
+        // Check DEFAULT_CATEGORIES for subcategories (fallback)
         for (const cat of DEFAULT_CATEGORIES) {
             if (cat.id === selectedCategoryId && cat.subcategories) {
                 return cat.subcategories;
             }
         }
-
-        // Check API categories — subcategories might be separate categories with matching prefix
-        const selectedCat = categoryCards.find(c => c.id === selectedCategoryId);
-        if (selectedCat?.subcategories) return selectedCat.subcategories;
 
         return null;
     }, [selectedCategoryId, categoryCards]);
