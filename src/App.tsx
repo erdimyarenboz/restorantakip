@@ -40,8 +40,8 @@ function ProtectedRoute({
 
   if (allowedRoles && effectiveRole && !allowedRoles.includes(effectiveRole)) {
     // Redirect to appropriate home based on role
-    const staffRoles = ['admin', 'waiter', 'kitchen'];
-    return <Navigate to={staffRoles.includes(effectiveRole) ? '/kitchen' : '/'} replace />;
+    const homeMap: Record<string, string> = { admin: '/kitchen', waiter: '/waiter', kitchen: '/kitchen' };
+    return <Navigate to={homeMap[effectiveRole] || '/'} replace />;
   }
 
   return children;
@@ -51,6 +51,7 @@ function AppRoutes() {
   const { isAuthenticated, role } = useAuth();
   const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
   const isSuperAdmin = role === 'super_admin';
+  const staffHome = role === 'waiter' ? '/waiter' : '/kitchen';
 
   return (
     <div className="app-container">
@@ -63,7 +64,7 @@ function AppRoutes() {
             path="/login"
             element={
               isAuthenticated ? (
-                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? '/kitchen' : '/')} replace />
+                <Navigate to={isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/')} replace />
               ) : (
                 <LoginPage />
               )
@@ -128,7 +129,7 @@ function AppRoutes() {
           <Route
             path="/kitchen"
             element={
-              <ProtectedRoute allowedRoles={['admin', 'waiter', 'kitchen']}>
+              <ProtectedRoute allowedRoles={['admin', 'kitchen']}>
                 <KitchenPage />
               </ProtectedRoute>
             }
@@ -165,7 +166,7 @@ function AppRoutes() {
             path="*"
             element={
               <Navigate
-                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isStaff ? '/kitchen' : '/')) : '/login'}
+                to={isAuthenticated ? (isSuperAdmin ? '/platform/dashboard' : (isStaff ? staffHome : '/')) : '/login'}
                 replace
               />
             }

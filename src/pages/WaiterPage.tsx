@@ -18,9 +18,9 @@ export default function WaiterPage() {
         updateOrderStatus(order.orderId, isThirdParty ? 'Kuryeye Teslim Edildi' : 'Teslim Edildi');
     };
 
-    // Show only active orders (in kitchen or ready) - hide delivered
+    // Show only ready orders for waiters - kitchen orders stay in kitchen view
     const activeOrders = orders.filter((order) =>
-        order.status === 'Mutfakta' || order.status === 'Hazır'
+        order.status === 'Hazır'
     );
 
     // Separate restaurant and third-party orders

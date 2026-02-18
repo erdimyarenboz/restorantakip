@@ -15,10 +15,13 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
     const isStaff = role === 'admin' || role === 'waiter' || role === 'kitchen' || role === 'super_admin';
     const showSearch = location.pathname === '/' && role === 'customer';
 
+    // Determine home path per role
+    const homePath = role === 'waiter' ? '/waiter' : role === 'kitchen' ? '/kitchen' : isStaff ? '/kitchen' : '/';
+
     return (
         <header className={styles.header}>
             <div className={styles.container}>
-                <Link to={isStaff ? '/kitchen' : '/'} className={styles.logo}>
+                <Link to={homePath} className={styles.logo}>
                     🍽️ Restoran Sipariş
                 </Link>
 
@@ -38,30 +41,55 @@ export default function Header({ onSearch, searchQuery = '' }: HeaderProps) {
                 <div className={styles.rightSection}>
                     {isStaff && (
                         <nav className={styles.adminNav}>
-                            <NavLink
-                                to="/kitchen"
-                                className={({ isActive }) =>
-                                    `${styles.adminLink} ${isActive ? styles.active : ''}`
-                                }
-                            >
-                                👨‍🍳 Mutfak
-                            </NavLink>
-                            <NavLink
-                                to="/waiter"
-                                className={({ isActive }) =>
-                                    `${styles.adminLink} ${isActive ? styles.active : ''}`
-                                }
-                            >
-                                🍴 Garson
-                            </NavLink>
+                            {/* Admin sees all links */}
                             {role === 'admin' && (
+                                <>
+                                    <NavLink
+                                        to="/kitchen"
+                                        className={({ isActive }) =>
+                                            `${styles.adminLink} ${isActive ? styles.active : ''}`
+                                        }
+                                    >
+                                        👨‍🍳 Mutfak
+                                    </NavLink>
+                                    <NavLink
+                                        to="/waiter"
+                                        className={({ isActive }) =>
+                                            `${styles.adminLink} ${isActive ? styles.active : ''}`
+                                        }
+                                    >
+                                        🍴 Garson
+                                    </NavLink>
+                                    <NavLink
+                                        to="/admin"
+                                        className={({ isActive }) =>
+                                            `${styles.adminLink} ${isActive ? styles.active : ''}`
+                                        }
+                                    >
+                                        💰 Kasa
+                                    </NavLink>
+                                </>
+                            )}
+                            {/* Kitchen only sees Mutfak */}
+                            {role === 'kitchen' && (
                                 <NavLink
-                                    to="/admin"
+                                    to="/kitchen"
                                     className={({ isActive }) =>
                                         `${styles.adminLink} ${isActive ? styles.active : ''}`
                                     }
                                 >
-                                    💰 Kasa
+                                    👨‍🍳 Mutfak
+                                </NavLink>
+                            )}
+                            {/* Waiter only sees Garson */}
+                            {role === 'waiter' && (
+                                <NavLink
+                                    to="/waiter"
+                                    className={({ isActive }) =>
+                                        `${styles.adminLink} ${isActive ? styles.active : ''}`
+                                    }
+                                >
+                                    🍴 Garson
                                 </NavLink>
                             )}
                             <button onClick={logout} className={styles.logoutButton}>
