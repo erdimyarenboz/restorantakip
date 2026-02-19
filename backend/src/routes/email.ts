@@ -184,6 +184,17 @@ router.post('/send', async (req: Request, res: Response) => {
 
         const emailSubject = subject || '🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın';
 
+        console.log('📧 Email send request:', {
+            recipientCount: emails.length,
+            subject: emailSubject,
+            smtpHost: process.env.SMTP_HOST,
+            smtpPort: process.env.SMTP_PORT,
+            smtpUser: process.env.SMTP_USER,
+            hasPassword: !!process.env.SMTP_PASS,
+            passwordLength: process.env.SMTP_PASS?.length,
+            hasCustomHtml: !!customHtml,
+        });
+
         // Configure transporter from env
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -194,6 +205,19 @@ router.post('/send', async (req: Request, res: Response) => {
                 pass: process.env.SMTP_PASS,
             },
         });
+
+        // Verify SMTP connection first
+        try {
+            await transporter.verify();
+            console.log('✅ SMTP connection verified successfully');
+        } catch (verifyErr: any) {
+            console.error('❌ SMTP connection verification failed:', verifyErr.message);
+            res.status(500).json({
+                error: `SMTP bağlantı hatası: ${verifyErr.message}`,
+                details: verifyErr.message,
+            });
+            return;
+        }
 
         // Use custom HTML if provided, otherwise use default template
         const html = customHtml || getDefaultTemplate();
@@ -207,8 +231,10 @@ router.post('/send', async (req: Request, res: Response) => {
                     subject: emailSubject,
                     html,
                 });
+                console.log(`✅ Email sent to: ${email}`);
                 results.push({ email, success: true });
             } catch (err: any) {
+                console.error(`❌ Failed to send to ${email}:`, err.message);
                 results.push({ email, success: false, error: err.message });
             }
         }
@@ -216,14 +242,17 @@ router.post('/send', async (req: Request, res: Response) => {
         const sent = results.filter(r => r.success).length;
         const failed = results.filter(r => !r.success).length;
 
+        console.log(`📊 Email results: ${sent} sent, ${failed} failed`);
+
         res.json({
             message: `${sent} e-posta gönderildi, ${failed} başarısız.`,
             results,
         });
-    } catch (error) {
-        console.error('Bulk email error:', error);
-        res.status(500).json({ error: 'E-posta gönderilemedi' });
+    } catch (error: any) {
+        console.error('Bulk email error:', error.message, error.stack);
+        res.status(500).json({ error: `E-posta gönderilemedi: ${error.message}` });
     }
 });
 
 export default router;
+

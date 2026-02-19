@@ -100,7 +100,7 @@ export default function PlatformDashboard() {
     const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
     const [emailSubject, setEmailSubject] = useState('🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın');
     const [emailSending, setEmailSending] = useState(false);
-    const [emailResult, setEmailResult] = useState<{ sent: number; failed: number } | null>(null);
+    const [emailResult, setEmailResult] = useState<{ sent: number; failed: number; error?: string } | null>(null);
     const [emailHtml, setEmailHtml] = useState('');
     const [showPreview, setShowPreview] = useState(false);
 
@@ -845,10 +845,12 @@ export default function PlatformDashboard() {
                                                 );
                                                 const sent = data.results?.filter((r: any) => r.success).length || 0;
                                                 const failed = data.results?.filter((r: any) => !r.success).length || 0;
-                                                setEmailResult({ sent, failed });
+                                                const failedDetails = data.results?.filter((r: any) => !r.success).map((r: any) => r.error).join(', ');
+                                                setEmailResult({ sent, failed, error: failedDetails || undefined });
                                                 if (sent > 0) setSelectedEmails([]);
-                                            } catch {
-                                                setEmailResult({ sent: 0, failed: selectedEmails.length });
+                                            } catch (err: any) {
+                                                const errMsg = err.response?.data?.error || err.response?.data?.details || err.message || 'Bilinmeyen hata';
+                                                setEmailResult({ sent: 0, failed: selectedEmails.length, error: errMsg });
                                             }
                                             setEmailSending(false);
                                         }}
@@ -868,11 +870,16 @@ export default function PlatformDashboard() {
                                         border: `1px solid ${emailResult.failed === 0 ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
                                     }}>
                                         <div style={{ color: '#f1f5f9', fontWeight: 700, marginBottom: '4px' }}>
-                                            {emailResult.failed === 0 ? '✅ Tüm E-postalar Gönderildi!' : '⚠️ Kısmi Gönderim'}
+                                            {emailResult.failed === 0 ? '✅ Tüm E-postalar Gönderildi!' : '⚠️ Gönderim Başarısız'}
                                         </div>
                                         <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
                                             {emailResult.sent} başarılı{emailResult.failed > 0 ? `, ${emailResult.failed} başarısız` : ''}
                                         </div>
+                                        {emailResult.error && (
+                                            <div style={{ color: '#f87171', fontSize: '0.8rem', marginTop: '8px', padding: '8px', background: 'rgba(239,68,68,0.1)', borderRadius: '8px', wordBreak: 'break-all' }}>
+                                                <strong>Hata:</strong> {emailResult.error}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
