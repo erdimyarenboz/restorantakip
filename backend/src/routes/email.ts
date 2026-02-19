@@ -1,5 +1,4 @@
 import { Router, Request, Response } from 'express';
-import nodemailer from 'nodemailer';
 
 const router = Router();
 
@@ -172,6 +171,42 @@ router.get('/template', (_req: Request, res: Response) => {
     res.json({ html: getDefaultTemplate() });
 });
 
+// Send email via Brevo HTTP API
+async function sendViaBrevo(
+    to: string,
+    subject: string,
+    htmlContent: string,
+    senderEmail: string,
+    senderName: string,
+    apiKey: string
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+                sender: { name: senderName, email: senderEmail },
+                to: [{ email: to }],
+                subject,
+                htmlContent,
+            }),
+        });
+
+        if (response.ok) {
+            return { success: true };
+        } else {
+            const errorData: any = await response.json();
+            return { success: false, error: errorData.message || `HTTP ${response.status}` };
+        }
+    } catch (err: any) {
+        return { success: false, error: err.message };
+    }
+}
+
 // Send bulk email to leads
 router.post('/send', async (req: Request, res: Response) => {
     try {
@@ -182,63 +217,34 @@ router.post('/send', async (req: Request, res: Response) => {
             return;
         }
 
-        const emailSubject = subject || '🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın';
-
-        console.log('📧 Email send request:', {
-            recipientCount: emails.length,
-            subject: emailSubject,
-            smtpHost: process.env.SMTP_HOST,
-            smtpPort: process.env.SMTP_PORT,
-            smtpUser: process.env.SMTP_USER,
-            hasPassword: !!process.env.SMTP_PASS,
-            passwordLength: process.env.SMTP_PASS?.length,
-            hasCustomHtml: !!customHtml,
-        });
-
-        // Configure transporter from env with generous timeouts for Render free tier
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-            connectionTimeout: 30000,  // 30s to establish connection
-            greetingTimeout: 30000,    // 30s for SMTP greeting
-            socketTimeout: 60000,      // 60s for socket inactivity
-        });
-
-        // Verify SMTP connection first
-        try {
-            await transporter.verify();
-            console.log('✅ SMTP connection verified successfully');
-        } catch (verifyErr: any) {
-            console.error('❌ SMTP connection verification failed:', verifyErr.message);
-            res.status(500).json({
-                error: `SMTP bağlantı hatası: ${verifyErr.message}`,
-                details: verifyErr.message,
-            });
+        const brevoApiKey = process.env.BREVO_API_KEY;
+        if (!brevoApiKey) {
+            res.status(500).json({ error: 'BREVO_API_KEY ortam değişkeni tanımlı değil' });
             return;
         }
 
-        // Use custom HTML if provided, otherwise use default template
+        const senderEmail = process.env.SENDER_EMAIL || 'erdimboz@gmail.com';
+        const senderName = process.env.SENDER_NAME || 'SipTakip';
+        const emailSubject = subject || '🍽️ SipTakip — Restoranınızı Dijital Çağa Taşıyın';
         const html = customHtml || getDefaultTemplate();
+
+        console.log('📧 Email send request via Brevo:', {
+            recipientCount: emails.length,
+            subject: emailSubject,
+            senderEmail,
+            hasCustomHtml: !!customHtml,
+        });
+
         const results: { email: string; success: boolean; error?: string }[] = [];
 
         for (const email of emails) {
-            try {
-                await transporter.sendMail({
-                    from: `"SipTakip" <${process.env.SMTP_USER}>`,
-                    to: email,
-                    subject: emailSubject,
-                    html,
-                });
+            const result = await sendViaBrevo(email, emailSubject, html, senderEmail, senderName, brevoApiKey);
+            if (result.success) {
                 console.log(`✅ Email sent to: ${email}`);
                 results.push({ email, success: true });
-            } catch (err: any) {
-                console.error(`❌ Failed to send to ${email}:`, err.message);
-                results.push({ email, success: false, error: err.message });
+            } else {
+                console.error(`❌ Failed to send to ${email}:`, result.error);
+                results.push({ email, success: false, error: result.error });
             }
         }
 
@@ -258,4 +264,3 @@ router.post('/send', async (req: Request, res: Response) => {
 });
 
 export default router;
-
