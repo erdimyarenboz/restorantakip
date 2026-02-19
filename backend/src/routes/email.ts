@@ -195,7 +195,7 @@ router.post('/send', async (req: Request, res: Response) => {
             hasCustomHtml: !!customHtml,
         });
 
-        // Configure transporter from env
+        // Configure transporter from env with generous timeouts for Render free tier
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: parseInt(process.env.SMTP_PORT || '587'),
@@ -204,6 +204,9 @@ router.post('/send', async (req: Request, res: Response) => {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
+            connectionTimeout: 30000,  // 30s to establish connection
+            greetingTimeout: 30000,    // 30s for SMTP greeting
+            socketTimeout: 60000,      // 60s for socket inactivity
         });
 
         // Verify SMTP connection first

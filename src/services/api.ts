@@ -125,6 +125,6 @@ export const staffUsersAPI = {
 export const emailAPI = {
     getTemplate: () => api.get('/email/template'),
     sendBulk: (emails: string[], subject?: string, customHtml?: string) =>
-        api.post('/email/send', { emails, subject, customHtml }),
+        api.post('/email/send', { emails, subject, customHtml }, { timeout: 120000 }),
 };
 
